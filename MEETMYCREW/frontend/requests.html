@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collaboration Requests • Meet My Crew</title>
+
+  <!-- Requests page CSS (only for this page) -->
+  <link rel="stylesheet" href="requests.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="side-top">
+        <div class="side-brand">Meet My Crew</div>
+      </div>
+
+      <nav class="menu">
+        <a href="dashboard.html">🏠 Dashboard</a>
+        <a href="discover.html">🧭 Discover</a>
+        <a href="search.html">🔎 Find Creatives</a>
+        <a href="messages.html">💬 Messages</a>
+        <a class="active" href="requests.html">🤝 Collaboration Requests</a>
+        <a href="profile.html">👤 Profile</a>
+      </nav>
+
+      <div class="side-bottom">
+        <a class="logout" href="landing.html">⏻ Log Out</a>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content">
+
+      <div class="topbar">
+        <h1 class="page-title">Collaboration Requests</h1>
+        <a class="btn btn-outline" href="dashboard.html">← Back</a>
+      </div>
+
+      <!-- ===== TABS (UI only) ===== -->
+      <section class="tabs">
+        <button class="tab active" type="button">Pending (3)</button>
+        <button class="tab" type="button">Accepted (1)</button>
+        <button class="tab" type="button">Declined (2)</button>
+      </section>
+
+      <!-- ===== REQUESTS LIST ===== -->
+      <section class="card pad">
+        <div class="section-head">
+          <h2 class="section-title">Pending Requests</h2>
+          <span class="small">UI sample list — backend later.</span>
+        </div>
+
+        <!-- Request 1 -->
+        <div class="req">
+          <div class="req-left">
+            <div class="avatar">SW</div>
+            <div class="req-info">
+              <div class="req-title">Film Project Collaboration</div>
+              <div class="req-sub">Sarah Williams • Cinematographer • Douala</div>
+              <div class="req-msg">
+                “Hi Alex, I’m interested in joining your next short film project. I can handle camera & lighting.”
+              </div>
+              <a class="link" href="profile.html">View profile →</a>
+            </div>
+          </div>
+
+          <div class="req-actions">
+            <button class="btn btn-primary" type="button">Accept</button>
+            <button class="btn btn-outline" type="button">Decline</button>
+          </div>
+        </div>
+
+        <!-- Request 2 -->
+        <div class="req">
+          <div class="req-left">
+            <div class="avatar">MC</div>
+            <div class="req-info">
+              <div class="req-title">Upcoming Short Film</div>
+              <div class="req-sub">Michal Chen • Actor • Yaounde</div>
+              <div class="req-msg">
+                “Hello, I’m available this weekend for acting roles. I’d love to be part of your production.”
+              </div>
+              <a class="link" href="profile.html">View profile →</a>
+            </div>
+          </div>
+
+          <div class="req-actions">
+            <button class="btn btn-primary" type="button">Accept</button>
+            <button class="btn btn-outline" type="button">Decline</button>
+          </div>
+        </div>
+
+        <!-- Request 3 -->
+        <div class="req">
+          <div class="req-left">
+            <div class="avatar">ED</div>
+            <div class="req-info">
+              <div class="req-title">Music Video Production</div>
+              <div class="req-sub">Emily Davis • Editor • Buea</div>
+              <div class="req-msg">
+                “I can help edit your music video. I work with Premiere Pro and can deliver fast.”
+              </div>
+              <a class="link" href="profile.html">View profile →</a>
+            </div>
+          </div>
+
+          <div class="req-actions">
+            <button class="btn btn-primary" type="button">Accept</button>
+            <button class="btn btn-outline" type="button">Decline</button>
+          </div>
+        </div>
+
+        <p class="hint">
+          *Buttons are frontend only. Later, Accept/Decline will update the database in PHP/MySQL.
+        </p>
+      </section>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

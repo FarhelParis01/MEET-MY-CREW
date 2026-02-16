@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results • Meet My Crew</title>
+
+  <!-- Search page CSS (only for this page) -->
+  <link rel="stylesheet" href="search.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="side-top">
+        <div class="side-brand">Meet My Crew</div>
+      </div>
+
+      <nav class="menu">
+        <a href="dashboard.html">🏠 Dashboard</a>
+        <a href="discover.html">🧭 Discover</a>
+        <a class="active" href="search.html">🔎 Find Creatives</a>
+        <a href="messages.html">💬 Messages</a>
+        <a href="requests.html">🤝 Collaboration Requests</a>
+        <a href="profile.html">👤 Profile</a>
+      </nav>
+
+      <div class="side-bottom">
+        <a class="logout" href="landing.html">⏻ Log Out</a>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content">
+
+      <div class="topbar">
+        <h1 class="page-title">Search Results</h1>
+        <a class="btn btn-outline" href="dashboard.html">← Back</a>
+      </div>
+
+      <!-- ===== FILTERS CARD ===== -->
+      <section class="card pad">
+        <h2 class="section-title">Find Creatives</h2>
+        <p class="subtext">Filter by location, role, and skill to find the right crew member.</p>
+
+        <div class="filters">
+          <div>
+            <label for="location">Location</label>
+            <input id="location" type="text" placeholder="e.g. Douala, Yaounde..." />
+          </div>
+
+          <div>
+            <label for="role">Role</label>
+            <select id="role">
+              <option value="">Select role</option>
+              <option>Actor</option>
+              <option>Cinematographer</option>
+              <option>Editor</option>
+              <option>Director</option>
+              <option>Producer</option>
+              <option>Content Creator</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="skill">Skill</label>
+            <input id="skill" type="text" placeholder="e.g. Editing, Scriptwriting..." />
+          </div>
+
+          <!-- Frontend only: button does not submit yet -->
+          <div class="filter-btn">
+            <label class="invisible">Search</label>
+            <button class="btn btn-primary btn-block" type="button">Search</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== RESULTS SECTION ===== -->
+      <section class="results-head">
+        <h2 class="section-title">Results</h2>
+        <p class="small">Showing sample results (UI only). Later, PHP/MySQL will load real data.</p>
+      </section>
+
+      <section class="results-grid">
+
+        <div class="card person">
+          <div class="person-top">
+            <div class="avatar">SW</div>
+            <div>
+              <div class="person-name">Sarah Williams</div>
+              <div class="person-role">Cinematographer</div>
+              <div class="person-loc">📍 Douala, Cameroon</div>
+            </div>
+          </div>
+
+          <div class="tags">
+            <span class="tag">Camera</span>
+            <span class="tag">Lighting</span>
+            <span class="tag">Drone</span>
+          </div>
+
+          <div class="person-actions">
+            <a class="btn btn-primary" href="profile.html">View Profile</a>
+            <a class="btn btn-outline" href="messages.html">Message</a>
+          </div>
+        </div>
+
+        <div class="card person">
+          <div class="person-top">
+            <div class="avatar">MC</div>
+            <div>
+              <div class="person-name">Michal Chen</div>
+              <div class="person-role">Actor</div>
+              <div class="person-loc">📍 Yaounde, Cameroon</div>
+            </div>
+          </div>
+
+          <div class="tags">
+            <span class="tag">Drama</span>
+            <span class="tag">Commercials</span>
+            <span class="tag">Voice</span>
+          </div>
+
+          <div class="person-actions">
+            <a class="btn btn-primary" href="profile.html">View Profile</a>
+            <a class="btn btn-outline" href="messages.html">Message</a>
+          </div>
+        </div>
+
+        <div class="card person">
+          <div class="person-top">
+            <div class="avatar">ED</div>
+            <div>
+              <div class="person-name">Emily Davis</div>
+              <div class="person-role">Editor</div>
+              <div class="person-loc">📍 Buea, Cameroon</div>
+            </div>
+          </div>
+
+          <div class="tags">
+            <span class="tag">Premiere Pro</span>
+            <span class="tag">Color</span>
+            <span class="tag">Subtitles</span>
+          </div>
+
+          <div class="person-actions">
+            <a class="btn btn-primary" href="profile.html">View Profile</a>
+            <a class="btn btn-outline" href="messages.html">Message</a>
+          </div>
+        </div>
+
+        <div class="card person">
+          <div class="person-top">
+            <div class="avatar">AF</div>
+            <div>
+              <div class="person-name">Amina Fokou</div>
+              <div class="person-role">Content Creator</div>
+              <div class="person-loc">📍 Bamenda, Cameroon</div>
+            </div>
+          </div>
+
+          <div class="tags">
+            <span class="tag">TikTok</span>
+            <span class="tag">Storytelling</span>
+            <span class="tag">Brand Ads</span>
+          </div>
+
+          <div class="person-actions">
+            <a class="btn btn-primary" href="profile.html">View Profile</a>
+            <a class="btn btn-outline" href="messages.html">Message</a>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

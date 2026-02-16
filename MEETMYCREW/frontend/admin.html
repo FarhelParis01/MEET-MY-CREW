@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard • Meet My Crew</title>
+
+  <!-- Admin page CSS -->
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ===== ADMIN SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="side-brand">Admin Panel</div>
+
+      <nav class="menu">
+        <a class="active" href="admin.html">📊 Dashboard</a>
+        <a href="#">👥 Manage Users</a>
+        <a href="#">🎭 Manage Creators</a>
+        <a href="#">📂 Projects</a>
+        <a href="#">🚨 Reports</a>
+        <a href="#">⚙ Settings</a>
+      </nav>
+
+      <a class="logout" href="landing.html">⏻ Log Out</a>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content">
+
+      <div class="topbar">
+        <h1 class="page-title">Admin Dashboard</h1>
+        <span class="admin-tag">Administrator</span>
+      </div>
+
+      <!-- ===== STATS ===== -->
+      <section class="stats">
+
+        <div class="card stat">
+          <div class="stat-title">Total Users</div>
+          <div class="stat-value">1,248</div>
+        </div>
+
+        <div class="card stat">
+          <div class="stat-title">Creators</div>
+          <div class="stat-value">842</div>
+        </div>
+
+        <div class="card stat">
+          <div class="stat-title">Projects</div>
+          <div class="stat-value">312</div>
+        </div>
+
+        <div class="card stat">
+          <div class="stat-title">Reports</div>
+          <div class="stat-value">7</div>
+        </div>
+
+      </section>
+
+      <!-- ===== RECENT USERS ===== -->
+      <section class="card pad">
+        <h2 class="section-title">Recent Users</h2>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>Sarah Williams</td>
+              <td>Cinematographer</td>
+              <td>Douala</td>
+              <td><span class="status active">Active</span></td>
+              <td><button class="btn btn-outline">View</button></td>
+            </tr>
+
+            <tr>
+              <td>Michal Chen</td>
+              <td>Actor</td>
+              <td>Yaounde</td>
+              <td><span class="status active">Active</span></td>
+              <td><button class="btn btn-outline">View</button></td>
+            </tr>
+
+            <tr>
+              <td>Emily Davis</td>
+              <td>Editor</td>
+              <td>Buea</td>
+              <td><span class="status suspended">Suspended</span></td>
+              <td><button class="btn btn-outline">Review</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="hint">
+          *Admin actions are frontend only. Backend control will be handled with PHP & MySQL.
+        </p>
+      </section>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile • Meet My Crew</title>
+
+  <!-- Profile page CSS (only for this page) -->
+  <link rel="stylesheet" href="profile.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="side-top">
+        <div class="side-brand">Meet My Crew</div>
+      </div>
+
+      <nav class="menu">
+        <a href="dashboard.html">🏠 Dashboard</a>
+        <a href="discover.html">🧭 Discover</a>
+        <a href="search.html">🔎 Find Creatives</a>
+        <a href="messages.html">💬 Messages</a>
+        <a href="requests.html">🤝 Collaboration Requests</a>
+        <a class="active" href="profile.html">👤 Profile</a>
+      </nav>
+
+      <div class="side-bottom">
+        <a class="logout" href="landing.html">⏻ Log Out</a>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content">
+
+      <div class="topbar">
+        <h1 class="page-title">Profile</h1>
+        <a class="btn btn-outline" href="dashboard.html">← Back</a>
+      </div>
+
+      <!-- ===== PROFILE HEADER CARD ===== -->
+      <section class="card pad profile-head">
+
+        <div class="profile-left">
+          <div class="photo">AJ</div>
+
+          <div class="info">
+            <div class="name">Alex Johnson</div>
+            <div class="role">Director</div>
+
+            <div class="meta">📍 Accra, Ghana • Available</div>
+
+            <div class="skills">
+              <span class="skill">🎬 Video Directing</span>
+              <span class="skill">✍ Scriptwriting</span>
+              <span class="skill">🎞 Editing</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <a class="btn btn-primary" href="messages.html">Message</a>
+          <a class="btn btn-outline" href="requests.html">Send Request</a>
+          <a class="btn btn-outline" href="#">Edit Profile</a>
+        </div>
+      </section>
+
+      <!-- ===== TWO COLUMN SECTION: ABOUT + DETAILS ===== -->
+      <section class="grid-2">
+
+        <!-- About -->
+        <div class="card pad">
+          <h2 class="section-title">About</h2>
+          <p class="text">
+            I am a film director with experience in short films and music videos.
+            I collaborate with actors, editors, and cinematographers to produce
+            high-quality content. I’m open to projects within my location or nearby regions.
+          </p>
+
+          <div class="mini-grid">
+            <div class="mini">
+              <div class="mini-title">Experience</div>
+              <div class="mini-value">4+ years</div>
+            </div>
+            <div class="mini">
+              <div class="mini-title">Projects</div>
+              <div class="mini-value">18</div>
+            </div>
+            <div class="mini">
+              <div class="mini-title">Rating</div>
+              <div class="mini-value">4.6/5</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact / Details -->
+        <div class="card pad">
+          <h2 class="section-title">Details</h2>
+
+          <div class="detail">
+            <span class="detail-key">Email</span>
+            <span class="detail-val">alexjohnson@email.com</span>
+          </div>
+
+          <div class="detail">
+            <span class="detail-key">Phone</span>
+            <span class="detail-val">+237 6XX XXX XXX</span>
+          </div>
+
+          <div class="detail">
+            <span class="detail-key">Main Role</span>
+            <span class="detail-val">Director</span>
+          </div>
+
+          <div class="detail">
+            <span class="detail-key">Location</span>
+            <span class="detail-val">Accra, Ghana</span>
+          </div>
+
+          <div class="detail">
+            <span class="detail-key">Availability</span>
+            <span class="detail-val">Available</span>
+          </div>
+
+          <p class="hint">*These are UI values. Later, PHP will load real data.</p>
+        </div>
+
+      </section>
+
+      <!-- ===== PORTFOLIO ===== -->
+      <section class="card pad">
+        <div class="section-head">
+          <h2 class="section-title">Portfolio</h2>
+          <a class="btn btn-outline" href="#">Add Work</a>
+        </div>
+
+        <div class="portfolio-grid">
+          <div class="work">
+            <div class="thumb">🎥</div>
+            <div class="work-title">Short Film: City Lights</div>
+            <div class="work-sub">Director • 2025</div>
+          </div>
+
+          <div class="work">
+            <div class="thumb">🎬</div>
+            <div class="work-title">Music Video: Night Vibes</div>
+            <div class="work-sub">Director • 2024</div>
+          </div>
+
+          <div class="work">
+            <div class="thumb">📸</div>
+            <div class="work-title">Behind The Scenes</div>
+            <div class="work-sub">Production • 2024</div>
+          </div>
+
+          <div class="work">
+            <div class="thumb">🎞</div>
+            <div class="work-title">Documentary Clip</div>
+            <div class="work-sub">Director • 2023</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+</body>
+</html>
