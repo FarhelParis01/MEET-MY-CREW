@@ -10,3 +10,9 @@ echo json_encode([
   "status" => "success",
   "data" => $row
 ]);
+
+
+npm create vite@latest meet-my-crew-frontend -- --template react
+cd meet-my-crew-frontend
+npm install
+npm run dev
