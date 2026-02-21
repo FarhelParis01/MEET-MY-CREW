@@ -12,7 +12,3 @@ echo json_encode([
 ]);
 
 
-npm create vite@latest meet-my-crew-frontend -- --template react
-cd meet-my-crew-frontend
-npm install
-npm run dev

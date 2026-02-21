@@ -8,7 +8,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    apiRequest("/check-session.php")
+    apiRequest("/check_session.php")
       .then((data) => setUser(data.user))
       .catch((e) => setErr(e.message));
   }, []);

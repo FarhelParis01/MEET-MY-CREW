@@ -1,19 +1,10 @@
 import { Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { apiRequest } from "../services/api";
+import { useAuth } from "scr/context/AuthContext.jsx";
 
 export default function ProtectedRoute({ children }) {
-  const [loading, setLoading] = useState(true);
-  const [ok, setOk] = useState(false);
-
-  useEffect(() => {
-    apiRequest("/check-session.php")
-      .then(() => setOk(true))
-      .catch(() => setOk(false))
-      .finally(() => setLoading(false));
-  }, []);
+  const { user, loading } = useAuth();
 
   if (loading) return <p style={{ padding: 24 }}>Loading...</p>;
-  if (!ok) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   return children;
 }

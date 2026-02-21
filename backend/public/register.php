@@ -8,5 +8,4 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
   exit; // stop preflight
 }
 
-<?php
 require_once __DIR__ . "/../src/auth/register.php";
