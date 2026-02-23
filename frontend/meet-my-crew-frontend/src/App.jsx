@@ -1,7 +1,18 @@
-export default function App() {
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+
+function App() {
   return (
-    <div className="min-h-screen grid place-items-center bg-slate-900">
-      <h1 className="text-4xl font-bold text-white">Tailwind is working ✅</h1>
-    </div>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </>
   );
 }
+
+export default App;
