@@ -1,25 +1,7 @@
-import { Routes, Route } from "react-router-dom";
-import Landing from "./pages/Landing.jsx";
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
-
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+    <div className="min-h-screen grid place-items-center bg-slate-900">
+      <h1 className="text-4xl font-bold text-white">Tailwind is working ✅</h1>
+    </div>
   );
 }
