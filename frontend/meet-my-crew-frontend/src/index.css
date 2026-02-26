@@ -1,1 +1,31 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme tokens using CSS variables */
+:root {
+  --bg: 248 250 252;        /* light background */
+  --panel: 255 255 255;     /* card/panel */
+  --text: 15 23 42;         /* slate-900 */
+  --muted: 71 85 105;       /* slate-600 */
+  --border: 226 232 240;    /* slate-200 */
+
+  --primary: 45 107 255;    /* electric blue */
+  --accent: 20 184 166;     /* teal */
+}
+
+.dark {
+  --bg: 11 18 32;           /* deep navy */
+  --panel: 17 24 39;        /* slate-900-ish */
+  --text: 226 232 240;      /* slate-200 */
+  --muted: 148 163 184;     /* slate-400 */
+  --border: 51 65 85;       /* slate-700 */
+
+  --primary: 45 107 255;
+  --accent: 20 184 166;
+}
+
+/* Optional smooth theme transition */
+* {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}

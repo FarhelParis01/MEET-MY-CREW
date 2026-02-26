@@ -1,144 +1,276 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {
+  User,
+  Mail,
+  Lock,
+  MapPin,
+  Building2,
+  Users,
+  ChevronDown,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
+import AuthShell from "../components/AuthShell";
+import { apiRequest } from "../services/api";
 
 export default function Register() {
+  const navigate = useNavigate();
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [role, setRole] = useState("");
+  const [region, setRegion] = useState("");
+  const [city, setCity] = useState("");
+
+  const [agree, setAgree] = useState(true);
+
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setErr("");
+
+    if (!agree) return setErr("You must agree to the Terms.");
+
+    setLoading(true);
+    try {
+      // ✅ adjust endpoint if yours is different
+      await apiRequest("/register.php", "POST", {
+        fullName,
+        email,
+        password,
+        role,
+        region,
+        city,
+      });
+
+      navigate("/login");
+    } catch (error) {
+      setErr("Registration failed. Email may already exist.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#0b1220]">
-      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-6 py-10">
-        <div className="w-full max-w-6xl overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/5 backdrop-blur">
-          <div className="grid grid-cols-1 md:grid-cols-2">
-            {/* LEFT PANEL */}
-            <div className="relative p-10 md:p-12 text-white">
-              <div
-                className="absolute inset-0 bg-cover bg-center opacity-45"
-                style={{
-                  backgroundImage: "url(/src/assets/bg.jpg)",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-              <div className="relative">
-                <h1 className="text-4xl font-semibold tracking-wide mb-4">
-                  Join Meet My Crew
-                </h1>
-                <p className="text-white/80 mb-8">
-                  Connect with local actors, editors, producers, and creators to
-                  build your crew and collaborate more efficiently.
-                </p>
+    <AuthShell
+      title="Create an Account"
+      subtitle="Sign up to find local creative professionals."
+      leftTitle="Join Meet My Crew"
+      leftText="Connect with local actors, editors, producers, and creators to build your crew and collaborate more efficiently."
+      bullets={[
+        {
+          icon: <CheckCircle2 className="w-5 h-5 text-[#18d2c0]" />,
+          text: "Find local creatives in your area",
+        },
+        {
+          icon: <CheckCircle2 className="w-5 h-5 text-[#18d2c0]" />,
+          text: "Build a professional portfolio",
+        },
+        {
+          icon: <CheckCircle2 className="w-5 h-5 text-[#18d2c0]" />,
+          text: "Send collaboration requests",
+        },
+      ]}
+      bgImage="/src/assets/bg.jpg"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Full Name */}
+        <div>
+          <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+            Full Name
+          </label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+            <input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Full Name"
+              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
+                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              required
+            />
+          </div>
+        </div>
 
-                <div className="space-y-4 text-white/90">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 text-blue-300">✔</span>
-                    <p>Find local creatives in your area</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 text-blue-300">✔</span>
-                    <p>Build a professional portfolio</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 text-blue-300">✔</span>
-                    <p>Send collaboration requests</p>
-                  </div>
-                </div>
+        {/* Email */}
+        <div>
+          <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+            Email
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
+                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              required
+            />
+          </div>
+        </div>
 
-                <p className="mt-10 text-sm text-white/70">
-                  © 2026 Meet My Crew | HND Software Project
-                </p>
-              </div>
+        {/* Password */}
+        <div>
+          <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+            Password
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
+                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Role */}
+        <div>
+          <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+            Role
+          </label>
+          <div className="relative">
+            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50 pointer-events-none" />
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full appearance-none rounded-md bg-white border border-slate-200 text-slate-900
+                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                         dark:bg-white/10 dark:border-white/10 dark:text-white"
+              required
+            >
+              <option value="" className="text-slate-900">
+                -- Select Role --
+              </option>
+              <option value="Actor">Actor</option>
+              <option value="Editor">Editor</option>
+              <option value="Producer">Producer</option>
+              <option value="Director">Director</option>
+              <option value="Cinematographer">Cinematographer</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Region + City */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+              Region
+            </label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50 pointer-events-none" />
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                className="w-full appearance-none rounded-md bg-white border border-slate-200 text-slate-900
+                           px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                           dark:bg-white/10 dark:border-white/10 dark:text-white"
+                required
+              >
+                <option value="">-- Select Region --</option>
+                <option value="Centre">Centre</option>
+                <option value="Littoral">Littoral</option>
+                <option value="West">West</option>
+                <option value="North West">North West</option>
+                <option value="South West">South West</option>
+              </select>
             </div>
+          </div>
 
-            {/* RIGHT PANEL */}
-            <div className="p-10 md:p-12 bg-white/10 backdrop-blur-sm">
-              <div className="max-w-md">
-                <h2 className="text-3xl font-semibold text-white mb-2">
-                  Create an Account
-                </h2>
-                <p className="text-white/70 mb-8">
-                  Sign up to find local creative professionals.
-                </p>
-
-                <label className="block text-white/80 text-sm mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="w-full rounded-md bg-white/20 border border-white/20 text-white placeholder:text-white/50 px-4 py-3 mb-5 outline-none focus:border-blue-400"
-                />
-
-                <label className="block text-white/80 text-sm mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full rounded-md bg-white/20 border border-white/20 text-white placeholder:text-white/50 px-4 py-3 mb-5 outline-none focus:border-blue-400"
-                />
-
-                <label className="block text-white/80 text-sm mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="Select role"
-                  className="w-full rounded-md bg-white/20 border border-white/20 text-white placeholder:text-white/50 px-4 py-3 mb-5 outline-none focus:border-blue-400"
-                />
-
-                <label className="block text-white/80 text-sm mb-2">
-                  Role
-                </label>
-                <select className="w-full rounded-md bg-white/20 border border-white/20 text-white px-4 py-3 mb-5 outline-none focus:border-blue-400">
-                  <option className="text-black">--Select Role--</option>
-                  <option className="text-black">Actor</option>
-                  <option className="text-black">Editor</option>
-                  <option className="text-black">Producer</option>
-                  <option className="text-black">Director</option>
-                </select>
-
-                <div className="grid grid-cols-2 gap-4 mb-5">
-                  <div>
-                    <label className="block text-white/80 text-sm mb-2">
-                      Region
-                    </label>
-                    <select className="w-full rounded-md bg-white/20 border border-white/20 text-white px-4 py-3 outline-none focus:border-blue-400">
-                      <option className="text-black"> </option>
-                      <option className="text-black">Île-de-France</option>
-                      <option className="text-black">Occitanie</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-white/80 text-sm mb-2">
-                      City
-                    </label>
-                    <select className="w-full rounded-md bg-white/20 border border-white/20 text-white px-4 py-3 outline-none focus:border-blue-400">
-                      <option className="text-black"> </option>
-                      <option className="text-black">Paris</option>
-                      <option className="text-black">Toulouse</option>
-                    </select>
-                  </div>
-                </div>
-
-                <label className="flex items-center gap-2 text-white/80 text-sm mb-6">
-                  <input type="checkbox" className="accent-blue-500" />
-                  I agree to the{" "}
-                  <span className="text-blue-300">Terms of Service</span> and{" "}
-                  <span className="text-blue-300">Privacy Policy</span>
-                </label>
-
-                <button className="w-full rounded-md bg-blue-600 hover:bg-blue-500 text-white py-3 font-semibold shadow-lg shadow-blue-600/20">
-                  Create Account
-                </button>
-
-                <p className="text-center text-white/80 text-sm mt-6">
-                  Already have an account?{" "}
-                  <Link to="/" className="text-blue-300 hover:underline">
-                    Login
-                  </Link>
-                </p>
-              </div>
+          <div>
+            <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+              City
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50 pointer-events-none" />
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full appearance-none rounded-md bg-white border border-slate-200 text-slate-900
+                           px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                           dark:bg-white/10 dark:border-white/10 dark:text-white"
+                required
+              >
+                <option value="">-- Select City --</option>
+                <option value="Yaounde">Yaounde</option>
+                <option value="Douala">Douala</option>
+                <option value="Buea">Buea</option>
+                <option value="Bamenda">Bamenda</option>
+                <option value="Bafoussam">Bafoussam</option>
+              </select>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        {/* Terms */}
+        <label className="flex items-start gap-2 text-sm text-slate-700 dark:text-white/80">
+          <input
+            type="checkbox"
+            checked={agree}
+            onChange={(e) => setAgree(e.target.checked)}
+            className="mt-1 accent-[#1b4bff]"
+          />
+          <span>
+            I agree to the{" "}
+            <button type="button" className="text-[#1b4bff] hover:underline">
+              Terms of Service
+            </button>{" "}
+            and{" "}
+            <button type="button" className="text-[#1b4bff] hover:underline">
+              Privacy Policy
+            </button>
+          </span>
+        </label>
+
+        {/* Error */}
+        {err && (
+          <div className="rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+            {err}
+          </div>
+        )}
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-md bg-[#1b4bff] hover:bg-[#143be0] text-white py-3 font-semibold
+                     shadow-lg shadow-[#1b4bff]/20 disabled:opacity-70 disabled:cursor-not-allowed
+                     inline-flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Account"
+          )}
+        </button>
+
+        <p className="text-center text-sm text-slate-600 dark:text-white/75">
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#18d2c0] hover:underline">
+            Login
+          </Link>
+        </p>
+      </form>
+    </AuthShell>
   );
 }

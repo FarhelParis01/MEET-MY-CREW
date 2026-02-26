@@ -1,109 +1,174 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
+import AuthShell from "../components/AuthShell";
+import { apiRequest } from "../services/api"; // keep your existing api helper
 
 export default function Login() {
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [show, setShow] = useState(false);
+  const [remember, setRemember] = useState(true);
+
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setErr("");
+    setLoading(true);
+
+    try {
+      // ✅ adjust endpoint if yours is different
+      await apiRequest("/login.php", "POST", { email, password, remember });
+
+      // ✅ after login, go dashboard
+      navigate("/dashboard");
+    } catch (error) {
+      setErr("Invalid email or password.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#0b1220]">
-      {/* Top bar space already handled by Navbar, but keep background consistent */}
-      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-6 py-10">
-        <div className="w-full max-w-6xl overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/5 backdrop-blur">
-          <div className="grid grid-cols-1 md:grid-cols-2">
-            {/* LEFT PANEL */}
-            <div className="relative p-10 md:p-12 text-white">
-              <div
-                className="absolute inset-0 bg-cover bg-center opacity-45"
-                style={{
-                  backgroundImage: "url(/src/assets/bg.jpg)",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-              <div className="relative">
-                <h1 className="text-4xl font-semibold tracking-wide mb-4">
-                  Welcome Back
-                </h1>
-                <p className="text-white/80 mb-8">
-                  Log in to connect with creatives near you.
-                </p>
-
-                <div className="space-y-4 text-white/90">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 text-blue-300">✔</span>
-                    <p>Find local creative professionals</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 text-blue-300">✔</span>
-                    <p>Build your production crew</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 text-blue-300">✔</span>
-                    <p>Collaborate on film & media projects</p>
-                  </div>
-                </div>
-
-                <p className="mt-10 text-sm text-white/70">
-                  © 2026 Meet My Crew | HND Software Project.
-                </p>
-              </div>
-            </div>
-
-            {/* RIGHT PANEL */}
-            <div className="p-10 md:p-12 bg-white/10 backdrop-blur-sm">
-              <div className="max-w-md">
-                <h2 className="text-3xl font-semibold text-white mb-2">
-                  Log In
-                </h2>
-                <p className="text-white/70 mb-8">
-                  Log in to connect with creatives near you.
-                </p>
-
-                <label className="block text-white/80 text-sm mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full rounded-md bg-white/20 border border-white/20 text-white placeholder:text-white/50 px-4 py-3 mb-5 outline-none focus:border-blue-400"
-                />
-
-                <label className="block text-white/80 text-sm mb-2">
-                  Password
-                </label>
-                <div className="relative mb-4">
-                  <input
-                    type="password"
-                    placeholder="Enter your password"
-                    className="w-full rounded-md bg-white/20 border border-white/20 text-white placeholder:text-white/50 px-4 py-3 pr-10 outline-none focus:border-blue-400"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
-                    👁
-                  </span>
-                </div>
-
-                <label className="flex items-center gap-2 text-white/80 text-sm mb-6">
-                  <input type="checkbox" className="accent-blue-500" />
-                  Remember Me
-                </label>
-
-                <button className="w-full rounded-md bg-blue-600 hover:bg-blue-500 text-white py-3 font-semibold shadow-lg shadow-blue-600/20">
-                  Log In
-                </button>
-
-                <div className="text-center text-white/70 mt-6 text-sm">
-                  <button className="hover:text-white">Forgot password?</button>
-                </div>
-
-                <div className="my-6 h-px bg-white/20" />
-
-                <p className="text-center text-white/80 text-sm">
-                  Don’t have an account?{" "}
-                  <Link to="/register" className="text-blue-300 hover:underline">
-                    Register
-                  </Link>
-                </p>
-              </div>
-            </div>
+    <AuthShell
+      title="Log In"
+      subtitle="Log in to connect with creatives near you."
+      leftTitle="Welcome Back"
+      leftText="Log in to connect with creatives near you."
+      bullets={[
+        {
+          icon: <CheckCircle2 className="w-5 h-5 text-[#18d2c0]" />,
+          text: "Find local creative professionals",
+        },
+        {
+          icon: <CheckCircle2 className="w-5 h-5 text-[#18d2c0]" />,
+          text: "Build your production crew",
+        },
+        {
+          icon: <CheckCircle2 className="w-5 h-5 text-[#18d2c0]" />,
+          text: "Collaborate on film & media projects",
+        },
+      ]}
+      bgImage="/src/assets/bg.jpg"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Email */}
+        <div>
+          <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+            Email
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
+                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              required
+            />
           </div>
         </div>
-      </div>
-    </div>
+
+        {/* Password */}
+        <div>
+          <label className="block text-sm mb-2 text-slate-700 dark:text-white/80">
+            Password
+          </label>
+
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50" />
+            <input
+              type={show ? "text" : "password"}
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
+                         px-11 py-3 pr-12 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
+                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              required
+            />
+
+            <button
+              type="button"
+              onClick={() => setShow((s) => !s)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md
+                         text-slate-600 hover:bg-slate-100
+                         dark:text-white/70 dark:hover:bg-white/10"
+              aria-label="Toggle password visibility"
+            >
+              {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Remember + Forgot */}
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-white/80">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="accent-[#1b4bff]"
+            />
+            Remember Me
+          </label>
+
+          <button
+            type="button"
+            className="text-sm text-[#1b4bff] hover:underline"
+          >
+            Forgot password?
+          </button>
+        </div>
+
+        {/* Error */}
+        {err && (
+          <div className="rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+            {err}
+          </div>
+        )}
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-md bg-[#1b4bff] hover:bg-[#143be0] text-white py-3 font-semibold
+                     shadow-lg shadow-[#1b4bff]/20 disabled:opacity-70 disabled:cursor-not-allowed
+                     inline-flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Logging in...
+            </>
+          ) : (
+            "Log In"
+          )}
+        </button>
+
+        {/* Footer link */}
+        <p className="text-center text-sm text-slate-600 dark:text-white/75">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-[#18d2c0] hover:underline">
+            Register
+          </Link>
+        </p>
+      </form>
+    </AuthShell>
   );
 }
