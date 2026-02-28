@@ -1,17 +1,24 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
-function App() {
+export default function App() {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/Login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </>
+    <Routes>
+      {/* Default route */}
+      <Route path="/" element={<Navigate to="/login" />} />
+
+      {/* Auth pages */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      {/* Main app */}
+      <Route path="/dashboard" element={<Dashboard />} />
+
+      {/* Optional fallback (very important) */}
+      <Route path="*" element={<Navigate to="/login" />} />
+    </Routes>
   );
 }
-
-export default App;
