@@ -30,7 +30,10 @@ export default function Login() {
 
     try {
       // ✅ adjust endpoint if yours is different
-      await apiRequest("/login.php", "POST", { email, password, remember });
+      await apiRequest("/login.php", "POST", {
+  email: email,
+  password: password,
+});
 
       // ✅ after login, go dashboard
       navigate("/dashboard");

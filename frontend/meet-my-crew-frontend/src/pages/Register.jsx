@@ -40,17 +40,17 @@ export default function Register() {
     try {
       // ✅ adjust endpoint if yours is different
       await apiRequest("/register.php", "POST", {
-        fullName,
-        email,
-        password,
-        role,
-        region,
-        city,
-      });
+  name: fullName,      // IMPORTANT: backend expects "name"
+  email: email,
+  password: password,  // IMPORTANT: small "password"
+  role: role,
+  region: region,
+  city: city,
+});
 
       navigate("/login");
     } catch (error) {
-      setErr("Registration failed. Email may already exist.");
+      setErr(error.message || "Registration failed");
     } finally {
       setLoading(false);
     }

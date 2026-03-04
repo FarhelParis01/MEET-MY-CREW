@@ -1,19 +1,20 @@
-const BASE_URL = "http://localhost/meet-my-crew-backend/public";
+const BASE_URL = "http://localhost/meet-my-crew/backend/public";
 
 export async function apiRequest(path, method = "GET", body) {
-  const options = {
+  console.log("METHOD BEING USED:", method);
+  const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // IMPORTANT for PHP sessions
-  };
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: "include",
+  });
 
-  if (body) options.body = JSON.stringify(body);
-
-  const res = await fetch(`${BASE_URL}${path}`, options);
-  const data = await res.json().catch(() => ({}));
+  const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.error || data.message || "Request failed");
+    throw new Error(data.error || "Request failed");
   }
 
   return data;
