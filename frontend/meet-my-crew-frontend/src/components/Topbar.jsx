@@ -1,16 +1,28 @@
 import { ChevronDown, Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { getProfile } from "../services/api";
+
+const DEFAULT_USER = {
+  full_name: "User",
+  role: "Creative",
+  region: "",
+  city: "",
+};
 
 export default function Topbar() {
   const { theme, toggleTheme } = useTheme();
+  const [user, setUser] = useState(DEFAULT_USER);
 
-  const user =
-    JSON.parse(localStorage.getItem("mmc_user") || "null") || {
-      full_name: "User",
-      role: "Creative",
-      region: "",
-      city: "",
-    };
+  useEffect(() => {
+    getProfile()
+      .then((res) => {
+        setUser(res.user ? { ...DEFAULT_USER, ...res.user } : DEFAULT_USER);
+      })
+      .catch(() => {
+        setUser(DEFAULT_USER);
+      });
+  }, []);
 
   return (
     <header className="mmc-topbar">

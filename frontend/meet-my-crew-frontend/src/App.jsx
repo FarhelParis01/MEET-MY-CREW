@@ -5,11 +5,11 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import Discover from "./pages/Discover";
+import Requests from "./pages/Requests";
+import Messages from "./pages/Messages";
 
 // placeholder pages for now
 const Creatives = () => <div className="mmc-pageTitle">Search Results</div>;
-const Messages = () => <div className="mmc-pageTitle">Messages</div>;
-const Requests = () => <div className="mmc-pageTitle">Collaboration Requests</div>;
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";

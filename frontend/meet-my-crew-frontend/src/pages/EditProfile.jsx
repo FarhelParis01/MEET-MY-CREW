@@ -1,6 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Save, X } from "lucide-react";
+import { getProfile, updateProfile } from "../services/api";
+
+const DEFAULT_FORM = {
+  full_name: "",
+  role: "",
+  city: "",
+  region: "",
+  bio: "",
+  skills: "",
+};
 
 function parseSkillsForInput(skills) {
   if (Array.isArray(skills)) return skills.join(", ");
@@ -10,25 +20,32 @@ function parseSkillsForInput(skills) {
 
 export default function EditProfile() {
   const navigate = useNavigate();
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  const currentUser = useMemo(() => {
-    const raw = localStorage.getItem("mmc_user");
-    if (!raw) return {};
-    try {
-      return JSON.parse(raw) || {};
-    } catch {
-      return {};
-    }
+  useEffect(() => {
+    getProfile()
+      .then((res) => {
+        const user = res.user || {};
+        const profile = res.profile || {};
+        setForm({
+          full_name: user.full_name || "",
+          role: user.role || "",
+          city: user.city || "",
+          region: user.region || "",
+          bio: profile.bio || "",
+          skills: parseSkillsForInput(profile.skills),
+        });
+      })
+      .catch((err) => {
+        setError(err.message || "Failed to load profile");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
-
-  const [form, setForm] = useState({
-    full_name: currentUser.full_name || "",
-    role: currentUser.role || "",
-    city: currentUser.city || "",
-    region: currentUser.region || "",
-    bio: currentUser.bio || "",
-    skills: parseSkillsForInput(currentUser.skills),
-  });
 
   function onChange(e) {
     const { name, value } = e.target;
@@ -39,26 +56,31 @@ export default function EditProfile() {
     navigate("/profile");
   }
 
-  function onSave(e) {
+  async function onSave(e) {
     e.preventDefault();
+    setSaving(true);
+    setError("");
 
     const skillsArray = form.skills
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const updatedUser = {
-      ...currentUser,
-      full_name: form.full_name.trim(),
-      role: form.role.trim(),
-      city: form.city.trim(),
-      region: form.region.trim(),
-      bio: form.bio.trim(),
-      skills: skillsArray,
-    };
-
-    localStorage.setItem("mmc_user", JSON.stringify(updatedUser));
-    navigate("/profile");
+    try {
+      await updateProfile({
+        full_name: form.full_name.trim(),
+        role: form.role.trim(),
+        city: form.city.trim(),
+        region: form.region.trim(),
+        bio: form.bio.trim(),
+        skills: skillsArray,
+      });
+      navigate("/profile");
+    } catch (err) {
+      setError(err.message || "Failed to save profile");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -71,6 +93,15 @@ export default function EditProfile() {
           Update your profile information and save changes.
         </p>
 
+        {error && (
+          <div className="mt-4 rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="mt-6 text-slate-600 dark:text-white/70">Loading profile...</div>
+        ) : (
         <form onSubmit={onSave} className="mt-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -162,10 +193,11 @@ export default function EditProfile() {
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
+              disabled={saving}
               className="inline-flex items-center gap-2 rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white px-5 py-3 font-semibold shadow-lg shadow-[#1f66ff]/20"
             >
               <Save size={16} />
-              Save Profile
+              {saving ? "Saving..." : "Save Profile"}
             </button>
 
             <button
@@ -178,6 +210,7 @@ export default function EditProfile() {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

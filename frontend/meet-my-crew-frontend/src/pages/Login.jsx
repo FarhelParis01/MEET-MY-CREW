@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { saveUser } from "../services/auth";
 import {
   Mail,
   Lock,
@@ -10,7 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import AuthShell from "../components/AuthShell";
-import { apiRequest } from "../services/api"; // keep your existing api helper
+import { loginUser } from "../services/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -30,16 +29,11 @@ export default function Login() {
   setLoading(true);
 
   try {
-    const res = await apiRequest("/login.php", "POST", {
-      email: email,
-      password: password,
-    });
-
-    saveUser(res.user);   // store logged-in user
+    await loginUser({ email, password });
     navigate("/dashboard");
 
-  } catch {
-    setErr("Invalid email or password.");
+  } catch (error) {
+    setErr(error.message || "Invalid email or password.");
   } finally {
     setLoading(false);
   }

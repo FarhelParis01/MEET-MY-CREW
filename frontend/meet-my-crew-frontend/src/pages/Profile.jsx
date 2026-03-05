@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getProfile } from "../services/api";
 
 const DEFAULT_USER = {
   full_name: "Alex Johnson",
@@ -20,34 +21,26 @@ const DEFAULT_USER = {
   region: "Centre",
   email: "alex@email.com",
   bio: "",
-  skills: [],
+  skills: "",
 };
-
-function loadStoredUser() {
-  try {
-    const raw = localStorage.getItem("mmc_user");
-    const parsed = raw ? JSON.parse(raw) : null;
-    if (parsed && typeof parsed === "object") {
-      return { ...DEFAULT_USER, ...parsed };
-    }
-  } catch {
-    // fall through to default user
-  }
-  return DEFAULT_USER;
-}
 
 export default function Profile() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(loadStoredUser);
+  const [user, setUser] = useState(DEFAULT_USER);
 
   useEffect(() => {
-    const syncFromStorage = () => setUser(loadStoredUser());
-    window.addEventListener("focus", syncFromStorage);
-    window.addEventListener("storage", syncFromStorage);
-    return () => {
-      window.removeEventListener("focus", syncFromStorage);
-      window.removeEventListener("storage", syncFromStorage);
-    };
+    getProfile()
+      .then((res) => {
+        const merged = {
+          ...DEFAULT_USER,
+          ...(res.user || {}),
+          ...((res.profile || {})),
+        };
+        setUser(merged);
+      })
+      .catch(() => {
+        setUser(DEFAULT_USER);
+      });
   }, []);
 
   const skills = Array.isArray(user.skills)

@@ -12,7 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import AuthShell from "../components/AuthShell";
-import { apiRequest } from "../services/api";
+import { registerUser } from "../services/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -37,16 +37,14 @@ export default function Register() {
     if (!agree) return setErr("You must agree to the Terms.");
 
     setLoading(true);
-    try {
-      // ✅ adjust endpoint if yours is different
-      await apiRequest("/register.php", "POST", {
-  name: fullName,      // IMPORTANT: backend expects "name"
-  email: email,
-  password: password,  // IMPORTANT: small "password"
-  role: role,
-  region: region,
-  city: city,
-});
+    try {      await registerUser({
+        full_name: fullName,
+        email,
+        password,
+        role,
+        region,
+        city,
+      });
 
       navigate("/login");
     } catch (error) {
@@ -274,3 +272,4 @@ export default function Register() {
     </AuthShell>
   );
 }
+

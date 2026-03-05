@@ -8,6 +8,7 @@ import {
   User,
   LogOut,
 } from "lucide-react";
+import { apiRequest } from "../services/api";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -21,9 +22,12 @@ const nav = [
 export default function Sidebar() {
   const navigate = useNavigate();
 
-  function logout() {
-    // simple logout (adjust when you add backend sessions)
-    localStorage.removeItem("mmc_user");
+  async function logout() {
+    try {
+      await apiRequest("/logout.php");
+    } catch {
+      // ignore logout errors and still route to login
+    }
     navigate("/login");
   }
 

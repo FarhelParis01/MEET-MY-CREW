@@ -1,65 +1,27 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapPin, Search, UserRound } from "lucide-react";
-
-const creatives = [
-  {
-    id: 1,
-    full_name: "Sarah Williams",
-    role: "Cinematographer",
-    city: "Yaounde",
-    region: "Centre",
-    skills: ["Lighting", "Camera Operation", "Color Grading"],
-    profile_image: "https://i.pravatar.cc/200?img=31",
-  },
-  {
-    id: 2,
-    full_name: "Michael Chen",
-    role: "Actor",
-    city: "Douala",
-    region: "Littoral",
-    skills: ["Improvisation", "Voice Control", "Script Analysis"],
-    profile_image: "https://i.pravatar.cc/200?img=12",
-  },
-  {
-    id: 3,
-    full_name: "Emily Davis",
-    role: "Editor",
-    city: "Buea",
-    region: "South West",
-    skills: ["Premiere Pro", "Story Pacing", "Sound Sync"],
-    profile_image: "https://i.pravatar.cc/200?img=25",
-  },
-  {
-    id: 4,
-    full_name: "Alex Johnson",
-    role: "Director",
-    city: "Bamenda",
-    region: "North West",
-    skills: ["Storyboarding", "Scriptwriting", "Team Leadership"],
-    profile_image: "https://i.pravatar.cc/200?img=54",
-  },
-  {
-    id: 5,
-    full_name: "Amina Nfor",
-    role: "Producer",
-    city: "Bafoussam",
-    region: "West",
-    skills: ["Scheduling", "Budget Planning", "Negotiation"],
-    profile_image: "https://i.pravatar.cc/200?img=47",
-  },
-  {
-    id: 6,
-    full_name: "Jordan Ekani",
-    role: "Sound Designer",
-    city: "Douala",
-    region: "Littoral",
-    skills: ["Foley", "Audio Mixing", "Dialogue Cleanup"],
-    profile_image: "https://i.pravatar.cc/200?img=61",
-  },
-];
+import { fetchCreatives, sendCollaborationRequest } from "../services/api";
 
 export default function Discover() {
   const [query, setQuery] = useState("");
+  const [creatives, setCreatives] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    fetchCreatives()
+      .then((res) => {
+        const users = Array.isArray(res.users) ? res.users : [];
+        setCreatives(users);
+      })
+      .catch((err) => {
+        setError(err.message || "Failed to load creatives");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   const filteredUsers = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -67,12 +29,28 @@ export default function Discover() {
 
     return creatives.filter((user) => {
       const roleMatch = user.role.toLowerCase().includes(term);
-      const skillMatch = user.skills.some((skill) =>
-        skill.toLowerCase().includes(term)
-      );
+      const skills = Array.isArray(user.skills)
+        ? user.skills
+        : String(user.skills || "")
+            .split(",")
+            .map((skill) => skill.trim())
+            .filter(Boolean);
+      const skillMatch = skills.some((skill) => skill.toLowerCase().includes(term));
       return roleMatch || skillMatch;
     });
-  }, [query]);
+  }, [query, creatives]);
+
+  async function sendRequest(targetUser) {
+    try {
+      await sendCollaborationRequest({
+        receiver_id: targetUser.user_id,
+        message: `Hi ${targetUser.full_name}, I would like to collaborate with you.`,
+      });
+      setNotice(`Request sent to ${targetUser.full_name}.`);
+    } catch (err) {
+      setError(err.message || "Failed to send request");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -101,7 +79,23 @@ export default function Discover() {
         </div>
       </div>
 
-      {filteredUsers.length === 0 ? (
+      {notice && (
+        <div className="rounded-xl border border-emerald-300/40 bg-emerald-100/60 dark:bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
+          {notice}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
+          Loading creatives...
+        </div>
+      ) : filteredUsers.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
           No creatives found for this search.
         </div>
@@ -109,12 +103,15 @@ export default function Discover() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredUsers.map((user) => (
             <article
-              key={user.id}
+              key={user.user_id}
               className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5"
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={user.profile_image}
+                  src={
+                    user.photo ||
+                    `https://i.pravatar.cc/200?u=${encodeURIComponent(user.full_name)}`
+                  }
                   alt={user.full_name}
                   className="h-14 w-14 rounded-full object-cover"
                 />
@@ -136,9 +133,15 @@ export default function Discover() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {user.skills.map((skill) => (
+                {(Array.isArray(user.skills)
+                  ? user.skills
+                  : String(user.skills || "")
+                      .split(",")
+                      .map((skill) => skill.trim())
+                      .filter(Boolean)
+                ).map((skill) => (
                   <span
-                    key={`${user.id}-${skill}`}
+                    key={`${user.user_id}-${skill}`}
                     className="rounded-lg border border-white/10 bg-white/65 dark:bg-white/10 px-2.5 py-1 text-xs text-slate-800 dark:text-white/80"
                   >
                     {skill}
@@ -151,7 +154,10 @@ export default function Discover() {
                   <UserRound size={15} />
                   View Profile
                 </button>
-                <button className="flex-1 rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white py-2.5 text-sm font-semibold shadow-lg shadow-[#1f66ff]/20">
+                <button
+                  onClick={() => sendRequest(user)}
+                  className="flex-1 rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white py-2.5 text-sm font-semibold shadow-lg shadow-[#1f66ff]/20"
+                >
                   Send Request
                 </button>
               </div>
@@ -162,4 +168,3 @@ export default function Discover() {
     </div>
   );
 }
-
