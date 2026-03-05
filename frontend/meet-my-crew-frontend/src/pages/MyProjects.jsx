@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BriefcaseBusiness, CalendarDays, Inbox, MapPin } from "lucide-react";
 
 const MY_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/my-projects.php";
@@ -30,9 +31,12 @@ function formatDeadline(deadline) {
   return date.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
 }
 
-function ProjectCard({ project }) {
+function ProjectCard({ project, onClick }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5">
+    <article
+      onClick={onClick}
+      className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5 cursor-pointer hover:bg-white/55 dark:hover:bg-white/10 transition-colors"
+    >
       <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
         {project.title || "Untitled Project"}
       </h4>
@@ -58,6 +62,7 @@ function ProjectCard({ project }) {
 }
 
 export default function MyProjects() {
+  const navigate = useNavigate();
   const [projectsCreated, setProjectsCreated] = useState([]);
   const [projectsJoined, setProjectsJoined] = useState([]);
   const [invites, setInvites] = useState([]);
@@ -66,19 +71,6 @@ export default function MyProjects() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [actingInviteId, setActingInviteId] = useState(null);
-
-  async function fetchProjects() {
-    const res = await fetch(MY_PROJECTS_URL, { credentials: "include" });
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Failed to load projects");
-    }
-
-    const normalized = normalizeProjects(data);
-    setProjectsCreated(normalized.projectsCreated);
-    setProjectsJoined(normalized.projectsJoined);
-  }
 
   async function fetchInvites() {
     const res = await fetch(MY_INVITES_URL, { credentials: "include" });
@@ -173,6 +165,12 @@ export default function MyProjects() {
     }
   }
 
+  function goToProject(project) {
+    const projectId = project.id || project.project_id;
+    if (!projectId) return;
+    navigate(`/project/${projectId}`);
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6">
@@ -210,7 +208,11 @@ export default function MyProjects() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {projectsCreated.map((project) => (
-                  <ProjectCard key={project.id || project.project_id || project.title} project={project} />
+                  <ProjectCard
+                    key={project.id || project.project_id || project.title}
+                    project={project}
+                    onClick={() => goToProject(project)}
+                  />
                 ))}
               </div>
             )}
@@ -226,7 +228,11 @@ export default function MyProjects() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {projectsJoined.map((project) => (
-                  <ProjectCard key={project.id || project.project_id || project.title} project={project} />
+                  <ProjectCard
+                    key={project.id || project.project_id || project.title}
+                    project={project}
+                    onClick={() => goToProject(project)}
+                  />
                 ))}
               </div>
             )}

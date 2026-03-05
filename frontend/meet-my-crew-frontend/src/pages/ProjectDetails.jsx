@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { BriefcaseBusiness, CalendarDays, Coins, MapPin, Users, UserRoundPlus } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  CalendarDays,
+  Coins,
+  MapPin,
+  Users,
+  UserRoundPlus,
+} from "lucide-react";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -35,8 +42,7 @@ export default function ProjectDetails() {
 
         if (!isMounted) return;
 
-        const nextProject =
-          data.project || data.project_details || data.details || data;
+        const nextProject = data.project || data.project_details || data.details || data;
 
         const nextMembers = Array.isArray(data.team_members)
           ? data.team_members
@@ -48,7 +54,9 @@ export default function ProjectDetails() {
           ? data.pending_invitations
           : Array.isArray(data.invitations)
             ? data.invitations
-            : [];
+            : Array.isArray(data.invites)
+              ? data.invites
+              : [];
 
         setProject(nextProject);
         setTeamMembers(nextMembers);

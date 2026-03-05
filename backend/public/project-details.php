@@ -41,10 +41,9 @@ if (!$project) {
 }
 
 $membersStmt = $conn->prepare(
-  "SELECT u.user_id, u.full_name, p.role, p.city
+  "SELECT u.user_id, u.full_name, u.role, u.city
    FROM project_members pm
    JOIN users u ON pm.user_id = u.user_id
-   LEFT JOIN profiles p ON p.user_id = u.user_id
    WHERE pm.project_id = ?"
 );
 if (!$membersStmt) {
