@@ -87,7 +87,7 @@ export default function Profile() {
       {/* MAIN PROFILE CARD */}
       <div className="col-span-12 lg:col-span-8">
 
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/1 backdrop-blur-sm p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
 
           {/* HEADER SECTION */}
           <div className="flex gap-6 items-start">
@@ -143,21 +143,21 @@ export default function Profile() {
               {/* STATS */}
               <div className="grid grid-cols-3 gap-4 mt-6">
 
-                <div className="bg-white/10 rounded-xl p-4">
+                <div className="bg-white border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-700 rounded-xl p-4">
                   <div className="text-2xl font-semibold">254</div>
                   <div className="text-sm text-slate-500 dark:text-white/60">
                     Total Connections
                   </div>
                 </div>
 
-                <div className="bg-white/10 rounded-xl p-4">
+                <div className="bg-white border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-700 rounded-xl p-4">
                   <div className="text-2xl font-semibold">12</div>
                   <div className="text-sm text-slate-500 dark:text-white/60">
                     Projects Completed
                   </div>
                 </div>
 
-                <div className="bg-white/10 rounded-xl p-4">
+                <div className="bg-white border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-700 rounded-xl p-4">
                   <div className="text-2xl font-semibold">8</div>
                   <div className="text-sm text-slate-500 dark:text-white/60">
                     Years Experience
@@ -221,7 +221,7 @@ export default function Profile() {
               {portfolio.map((p) => (
                 <div
                   key={p.title}
-                  className="rounded-xl border border-white/10 bg-white/10 overflow-hidden"
+                  className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 overflow-hidden"
                 >
 
                   <div className="h-32 bg-black/40 flex items-center justify-center">
@@ -237,7 +237,7 @@ export default function Profile() {
 
             </div>
 
-            <button className="mt-4 w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-slate-900 dark:text-white">
+            <button className="mt-4 w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-slate-900 dark:text-slate-100">
               View All Projects
             </button>
 
@@ -256,7 +256,7 @@ export default function Profile() {
               {reviews.map((r) => (
                 <div
                   key={r.name}
-                  className="rounded-xl border border-white/10 bg-white/10 p-4"
+                  className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4"
                 >
 
                   <div className="flex items-center justify-between">
@@ -299,7 +299,7 @@ export default function Profile() {
       {/* CONTACT CARD */}
       <aside className="col-span-12 lg:col-span-4">
 
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
 
           <h3 className="text-lg font-semibold mb-4">
             Contact
@@ -354,7 +354,7 @@ export default function Profile() {
               Availability
             </h4>
 
-            <div className="bg-white/10 px-4 py-3 rounded-xl text-slate-800 dark:text-white/90">
+            <div className="bg-white border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-700 px-4 py-3 rounded-xl text-slate-800 dark:text-slate-100">
               Open to new projects
             </div>
 
@@ -367,5 +367,7 @@ export default function Profile() {
     </div>
   );
 }
+
+
 
 

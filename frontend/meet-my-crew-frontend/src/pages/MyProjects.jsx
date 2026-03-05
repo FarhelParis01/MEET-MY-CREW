@@ -35,9 +35,9 @@ function ProjectCard({ project, onClick }) {
   return (
     <article
       onClick={onClick}
-      className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5 cursor-pointer hover:bg-white/55 dark:hover:bg-white/10 transition-colors"
+      className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5 cursor-pointer hover:bg-white/55 dark:hover:bg-white/10 transition-colors"
     >
-      <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
+      <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
         {project.title || "Untitled Project"}
       </h4>
 
@@ -173,8 +173,8 @@ export default function MyProjects() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white/90">My Projects</h2>
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">My Projects</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-white/65">
           Review projects you created, projects you joined, and pending invitations.
         </p>
@@ -193,16 +193,16 @@ export default function MyProjects() {
       ) : null}
 
       {loading ? (
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
           Loading project data...
         </div>
       ) : (
         <>
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Projects I Created</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Projects I Created</h3>
 
             {projectsCreated.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-white/70">
                 You have not created any projects yet.
               </div>
             ) : (
@@ -219,10 +219,10 @@ export default function MyProjects() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Projects I Joined</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Projects I Joined</h3>
 
             {projectsJoined.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-white/70">
                 You have not joined any projects yet.
               </div>
             ) : (
@@ -239,10 +239,10 @@ export default function MyProjects() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Pending Invitations</h3>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Pending Invitations</h3>
 
             {invites.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-white/70">
                 No pending invitations.
               </div>
             ) : (
@@ -252,14 +252,14 @@ export default function MyProjects() {
                   return (
                     <article
                       key={inviteId}
-                      className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5"
+                      className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
                     >
                       <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/65">
                         <Inbox className="h-4 w-4 text-[#00b3c7]" />
                         Pending invitation
                       </div>
 
-                      <h4 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                      <h4 className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
                         {invite.title || invite.project_title || "Project Invitation"}
                       </h4>
 
@@ -295,3 +295,4 @@ export default function MyProjects() {
     </div>
   );
 }
+

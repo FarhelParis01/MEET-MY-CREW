@@ -145,10 +145,10 @@ export default function Discover() {
   return (
     <>
       <div className="space-y-6">
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-5 md:p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5 md:p-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white/90">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
                 Discover Creatives
               </h2>
               <p className="mt-1 text-sm text-slate-600 dark:text-white/65">
@@ -166,7 +166,7 @@ export default function Discover() {
                     setLoading(true);
                     setQuery(e.target.value);
                   }}
-                  className="w-full bg-transparent outline-none text-slate-900 dark:text-white"
+                  className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
                   placeholder="Search role or skill..."
                 />
               </div>
@@ -187,11 +187,11 @@ export default function Discover() {
         )}
 
         {loading ? (
-          <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
             Loading creatives...
           </div>
         ) : creatives.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
             No creatives found for this search.
           </div>
         ) : (
@@ -199,7 +199,7 @@ export default function Discover() {
             {creatives.map((user) => (
               <article
                 key={user.user_id}
-                className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5"
+                className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -211,7 +211,7 @@ export default function Discover() {
                     className="h-14 w-14 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">
                       {user.full_name}
                     </h3>
                     <p className="text-sm text-slate-600 dark:text-white/65">
@@ -275,7 +275,7 @@ export default function Discover() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4">
           <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-100 dark:bg-slate-900 p-5 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Invite to Project
               </h3>
               <button
@@ -304,7 +304,7 @@ export default function Discover() {
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
                 disabled={projectsLoading || projectsCreated.length === 0}
-                className="w-full rounded-xl border border-white/10 bg-white dark:bg-white/10 px-3 py-2 text-slate-900 dark:text-white outline-none"
+                className="w-full rounded-xl border border-white/10 bg-white dark:bg-white/10 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none"
               >
                 {projectsLoading ? (
                   <option value="">Loading projects...</option>
@@ -328,7 +328,7 @@ export default function Discover() {
                 value={invitationMessage}
                 onChange={(e) => setInvitationMessage(e.target.value)}
                 rows={4}
-                className="w-full rounded-xl border border-white/10 bg-white dark:bg-white/10 px-3 py-2 text-slate-900 dark:text-white outline-none"
+                className="w-full rounded-xl border border-white/10 bg-white dark:bg-white/10 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none"
                 placeholder="Write a short invitation message"
               />
             </div>
@@ -336,7 +336,7 @@ export default function Discover() {
             <div className="mt-5 flex items-center justify-end gap-2">
               <button
                 onClick={closeInviteModal}
-                className="rounded-xl border border-white/10 bg-white/70 hover:bg-white dark:bg-white/10 dark:hover:bg-white/15 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white"
+                className="rounded-xl border border-white/10 bg-white/70 hover:bg-white dark:bg-white/10 dark:hover:bg-white/15 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-slate-100"
               >
                 Cancel
               </button>
@@ -354,3 +354,4 @@ export default function Discover() {
     </>
   );
 }
+

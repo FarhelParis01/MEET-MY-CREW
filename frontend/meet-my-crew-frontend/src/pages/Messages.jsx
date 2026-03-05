@@ -159,8 +159,8 @@ export default function Messages() {
 
   return (
     <div className="grid grid-cols-12 gap-6 min-h-[70vh]">
-      <aside className="col-span-12 lg:col-span-4 rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-4">
-        <h2 className="px-2 text-lg font-semibold text-slate-900 dark:text-white/90">
+      <aside className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4">
+        <h2 className="px-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
           Conversations
         </h2>
 
@@ -172,7 +172,7 @@ export default function Messages() {
               className={`w-full text-left rounded-xl border px-3 py-3 transition ${
                 activeConversation?.id === conversation.id
                   ? "border-[#1f66ff]/40 bg-[#1f66ff]/10"
-                  : "border-white/10 bg-white/55 dark:bg-white/5 hover:bg-white/75 dark:hover:bg-white/10"
+                  : "border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -182,7 +182,7 @@ export default function Messages() {
                   className="h-10 w-10 rounded-full object-cover"
                 />
                 <div>
-                  <div className="font-semibold text-slate-900 dark:text-white">
+                  <div className="font-semibold text-slate-900 dark:text-slate-100">
                     {conversation.full_name}
                   </div>
                   <div className="text-xs text-slate-600 dark:text-white/60">
@@ -195,7 +195,7 @@ export default function Messages() {
         </div>
       </aside>
 
-      <section className="col-span-12 lg:col-span-8 rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-4 md:p-5 flex flex-col">
+      <section className="col-span-12 lg:col-span-8 rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4 md:p-5 flex flex-col">
         {activeConversation ? (
           <>
             <div className="pb-4 border-b border-white/10 flex items-center gap-3">
@@ -205,7 +205,7 @@ export default function Messages() {
                 className="h-11 w-11 rounded-full object-cover"
               />
               <div>
-                <div className="font-semibold text-slate-900 dark:text-white">
+                <div className="font-semibold text-slate-900 dark:text-slate-100">
                   {activeConversation.full_name}
                 </div>
                 <div className="text-xs text-slate-600 dark:text-white/60">
@@ -234,7 +234,7 @@ export default function Messages() {
                         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                           isMine
                             ? "bg-[#1f66ff] text-white"
-                            : "bg-white/70 dark:bg-white/10 text-slate-900 dark:text-white"
+                            : "bg-white/70 dark:bg-white/10 text-slate-900 dark:text-slate-100"
                         }`}
                       >
                         <div className="text-xs opacity-80 mb-1">
@@ -256,7 +256,7 @@ export default function Messages() {
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  className="w-full bg-transparent outline-none text-slate-900 dark:text-white"
+                  className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
                   placeholder="Type a message..."
                 />
                 <button
@@ -281,3 +281,5 @@ export default function Messages() {
     </div>
   );
 }
+
+

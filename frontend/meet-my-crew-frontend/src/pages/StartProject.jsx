@@ -74,10 +74,10 @@ export default function StartProject() {
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 md:p-8">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 md:p-8">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-slate-100">
               Start a New Project
             </h2>
             <p className="mt-1 text-slate-600 dark:text-white/65">
@@ -205,3 +205,4 @@ export default function StartProject() {
     </div>
   );
 }
+

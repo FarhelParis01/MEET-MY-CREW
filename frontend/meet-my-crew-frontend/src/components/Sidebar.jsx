@@ -9,6 +9,7 @@ import {
   User,
   FolderPlus,
   LogOut,
+  X,
 } from "lucide-react";
 import { apiRequest } from "../services/api";
 
@@ -23,7 +24,7 @@ const nav = [
   { to: "/profile", label: "Profile", icon: User },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose }) {
   const navigate = useNavigate();
 
   async function logout() {
@@ -32,12 +33,18 @@ export default function Sidebar() {
     } catch {
       // ignore logout errors and still route to login
     }
+    if (onClose) onClose();
     navigate("/login");
   }
 
   return (
-    <aside className="mmc-sidebar">
-      <div className="mmc-brand">Meet My Crew</div>
+    <aside className={`mmc-sidebar ${isOpen ? "open" : ""}`}>
+      <div className="mmc-sidebar-head">
+        <div className="mmc-brand">Meet My Crew</div>
+        <button className="mmc-sidebar-close" onClick={onClose} aria-label="Close menu">
+          <X size={18} />
+        </button>
+      </div>
 
       <nav className="mmc-nav">
         {nav.map((item) => {
@@ -46,6 +53,7 @@ export default function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={onClose}
               className={({ isActive }) =>
                 "mmc-link" + (isActive ? " active" : "")
               }

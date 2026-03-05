@@ -200,3 +200,103 @@ body {
   .mmc-app { grid-template-columns: 1fr; }
   .mmc-sidebar { position: relative; height: auto; }
 }
+
+/* Layout refactor: responsive sidebar + mobile overlay */
+.mmc-topbar-left { display: flex; align-items: center; }
+.mmc-menuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.mmc-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mmc-sidebar-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.mmc-overlay {
+  display: none;
+  border: 0;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .mmc-app { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+  .mmc-sidebar {
+    width: 260px;
+    position: sticky;
+    top: 0;
+    left: auto;
+    z-index: auto;
+    height: 100vh;
+    transform: none !important;
+    box-shadow: none;
+  }
+  .mmc-menuBtn { display: none; }
+  .mmc-sidebar-close { display: none; }
+  .mmc-overlay { display: none !important; }
+}
+
+@media (max-width: 767px) {
+  .mmc-app {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .mmc-main {
+    min-height: 100vh;
+  }
+
+  .mmc-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    max-width: 88vw;
+    height: 100vh;
+    z-index: 60;
+    transform: translateX(-105%);
+    transition: transform 220ms ease;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+  }
+
+  .mmc-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mmc-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(5, 9, 20, 0.55);
+  }
+
+  .mmc-menuBtn { display: inline-flex; }
+  .mmc-sidebar-close { display: inline-flex; }
+
+  .mmc-userMiniText { display: none; }
+  .mmc-content { padding: 16px; }
+}

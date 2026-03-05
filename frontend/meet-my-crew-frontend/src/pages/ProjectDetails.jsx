@@ -177,8 +177,8 @@ export default function ProjectDetails() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white/90">
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
           Project Details
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-white/65">
@@ -193,13 +193,13 @@ export default function ProjectDetails() {
       ) : null}
 
       {loading ? (
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
           Loading project details...
         </div>
       ) : (
         <>
-          <section className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-6">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+          <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               {project?.title || "Untitled Project"}
             </h3>
 
@@ -231,12 +231,12 @@ export default function ProjectDetails() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               Team Members
             </h3>
 
             {teamMembers.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-white/70">
                 No team members found.
               </div>
             ) : (
@@ -244,14 +244,14 @@ export default function ProjectDetails() {
                 {teamMembers.map((member) => (
                   <article
                     key={member.user_id || member.id || member.email || member.name}
-                    className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5"
+                    className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
                   >
                     <div className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-white/65">
                       <Users className="h-4 w-4 text-[#1f66ff]" />
                       Member
                     </div>
 
-                    <h4 className="mt-2 font-semibold text-slate-900 dark:text-white">
+                    <h4 className="mt-2 font-semibold text-slate-900 dark:text-slate-100">
                       {member.full_name || member.name || "Unnamed"}
                     </h4>
 
@@ -269,12 +269,12 @@ export default function ProjectDetails() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               Pending Invitations
             </h3>
 
             {pendingInvitations.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-white/70">
                 No pending invitations.
               </div>
             ) : (
@@ -282,14 +282,14 @@ export default function ProjectDetails() {
                 {pendingInvitations.map((invite) => (
                   <article
                     key={invite.id || invite.invite_id || invite.receiver_id}
-                    className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5"
+                    className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
                   >
                     <div className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-white/65">
                       <UserRoundPlus className="h-4 w-4 text-[#00b3c7]" />
                       Invitation
                     </div>
 
-                    <h4 className="mt-2 font-semibold text-slate-900 dark:text-white">
+                    <h4 className="mt-2 font-semibold text-slate-900 dark:text-slate-100">
                       {invite.full_name || invite.name || "Unknown user"}
                     </h4>
 
@@ -303,11 +303,11 @@ export default function ProjectDetails() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               Project Chat
             </h3>
 
-            <div className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-4 md:p-5">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4 md:p-5">
               {messagesError ? (
                 <div className="mb-3 rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
                   {messagesError}
@@ -322,7 +322,7 @@ export default function ProjectDetails() {
                 ) : (
                   messages.map((msg, index) => (
                     <div key={`${msg.created_at}-${index}`} className="flex">
-                      <div className="max-w-[85%] rounded-2xl border border-white/10 bg-white/70 dark:bg-white/10 px-4 py-3">
+                      <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 px-4 py-3">
                         <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/55">
                           <MessageCircle className="h-3.5 w-3.5" />
                           <span className="font-semibold text-slate-700 dark:text-white/80">
@@ -343,7 +343,7 @@ export default function ProjectDetails() {
                   value={newMessage}
                   onChange={(event) => setNewMessage(event.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 rounded-xl border border-white/10 bg-white/70 dark:bg-white/10 px-4 py-2.5 text-slate-900 dark:text-white outline-none"
+                  className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 px-4 py-2.5 text-slate-900 dark:text-slate-100 outline-none"
                 />
                 <button
                   type="submit"
@@ -361,3 +361,4 @@ export default function ProjectDetails() {
     </div>
   );
 }
+

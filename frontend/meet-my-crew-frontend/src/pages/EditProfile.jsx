@@ -85,8 +85,8 @@ export default function EditProfile() {
 
   return (
     <div className="max-w-4xl">
-      <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 md:p-8">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 md:p-8">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
           Edit Profile
         </h1>
         <p className="mt-2 text-sm text-slate-600 dark:text-white/65">
@@ -112,7 +112,7 @@ export default function EditProfile() {
                 name="full_name"
                 value={form.full_name}
                 onChange={onChange}
-                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-[#1f66ff]"
+                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-slate-100 outline-none focus:border-[#1f66ff]"
                 placeholder="Your full name"
                 required
               />
@@ -126,7 +126,7 @@ export default function EditProfile() {
                 name="role"
                 value={form.role}
                 onChange={onChange}
-                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-[#1f66ff]"
+                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-slate-100 outline-none focus:border-[#1f66ff]"
                 placeholder="Director, Actor, Editor..."
                 required
               />
@@ -142,7 +142,7 @@ export default function EditProfile() {
                 name="city"
                 value={form.city}
                 onChange={onChange}
-                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-[#1f66ff]"
+                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-slate-100 outline-none focus:border-[#1f66ff]"
                 placeholder="e.g. Yaounde"
                 required
               />
@@ -156,7 +156,7 @@ export default function EditProfile() {
                 name="region"
                 value={form.region}
                 onChange={onChange}
-                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-[#1f66ff]"
+                className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-slate-100 outline-none focus:border-[#1f66ff]"
                 placeholder="e.g. Centre"
                 required
               />
@@ -172,7 +172,7 @@ export default function EditProfile() {
               value={form.bio}
               onChange={onChange}
               rows={4}
-              className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-[#1f66ff]"
+              className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-slate-100 outline-none focus:border-[#1f66ff]"
               placeholder="Tell people about your creative work..."
             />
           </div>
@@ -185,7 +185,7 @@ export default function EditProfile() {
               name="skills"
               value={form.skills}
               onChange={onChange}
-              className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-[#1f66ff]"
+              className="w-full rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-4 py-3 text-slate-900 dark:text-slate-100 outline-none focus:border-[#1f66ff]"
               placeholder="Video Directing, Scriptwriting, Editing"
             />
           </div>
@@ -215,3 +215,4 @@ export default function EditProfile() {
     </div>
   );
 }
+

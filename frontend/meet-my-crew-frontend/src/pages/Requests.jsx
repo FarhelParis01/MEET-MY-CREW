@@ -67,8 +67,8 @@ export default function Requests() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white/90">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
           Collaboration Requests
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-white/65">
@@ -83,11 +83,11 @@ export default function Requests() {
       )}
 
       {loading ? (
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
           Loading requests...
         </div>
       ) : requests.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
           No requests found.
         </div>
       ) : (
@@ -95,14 +95,14 @@ export default function Requests() {
           {requests.map((request) => (
             <article
               key={request.request_id}
-              className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5"
+              className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
             >
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <div className="text-sm text-slate-500 dark:text-white/55">
                     Sender
                   </div>
-                  <div className="font-semibold text-slate-900 dark:text-white">
+                  <div className="font-semibold text-slate-900 dark:text-slate-100">
                     {request.sender_name || "Unknown sender"}
                   </div>
                 </div>
@@ -140,3 +140,4 @@ export default function Requests() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { ChevronDown, Moon, Sun } from "lucide-react";
+import { ChevronDown, Menu, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { getProfile } from "../services/api";
@@ -10,7 +10,7 @@ const DEFAULT_USER = {
   city: "",
 };
 
-export default function Topbar() {
+export default function Topbar({ onMenuClick }) {
   const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState(DEFAULT_USER);
 
@@ -26,7 +26,11 @@ export default function Topbar() {
 
   return (
     <header className="mmc-topbar">
-      <div />
+      <div className="mmc-topbar-left">
+        <button className="mmc-menuBtn" onClick={onMenuClick} aria-label="Toggle menu">
+          <Menu size={18} />
+        </button>
+      </div>
 
       <div className="mmc-topbar-right">
         <button className="mmc-themeBtn" onClick={toggleTheme}>

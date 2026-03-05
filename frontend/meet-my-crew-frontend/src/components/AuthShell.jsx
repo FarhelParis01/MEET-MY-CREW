@@ -16,7 +16,7 @@ export default function AuthShell({ title, subtitle, leftTitle, leftText, bullet
       {/* Top nav */}
       <header className="sticky top-0 z-20 border-b border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-[#07101d]/70 backdrop-blur">
         <div className="mx-auto max-w-6xl px-5 h-16 flex items-center justify-between">
-          <div className="text-lg font-semibold tracking-wide text-slate-900 dark:text-white">
+          <div className="text-lg font-semibold tracking-wide text-slate-900 dark:text-slate-100">
             Meet My Crew
           </div>
 
@@ -99,7 +99,7 @@ export default function AuthShell({ title, subtitle, leftTitle, leftText, bullet
             {/* RIGHT PANEL */}
             <div className="p-10 md:p-12 bg-slate-50 dark:bg-white/5">
               <div className="max-w-md">
-                <h2 className="text-3xl font-semibold text-slate-900 dark:text-white mb-2">
+                <h2 className="text-3xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
                   {title}
                 </h2>
                 <p className="text-slate-600 dark:text-white/70 mb-8">{subtitle}</p>
@@ -112,3 +112,4 @@ export default function AuthShell({ title, subtitle, leftTitle, leftText, bullet
     </div>
   );
 }
+
