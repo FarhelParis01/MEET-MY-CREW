@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../_cors.php";
+require_once __DIR__ . "/../../src/config/cors.php";
 require_once __DIR__ . "/../src/auth/check_session.php";
 require_once __DIR__ . "/../src/db.php"; // your db connection
 

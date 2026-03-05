@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../src/config/cors.php";
 header("Content-Type: application/json");
 
 require_once __DIR__ . "/../src/config/database.php";
@@ -10,5 +11,6 @@ echo json_encode([
   "status" => "success",
   "data" => $row
 ]);
+
 
 
