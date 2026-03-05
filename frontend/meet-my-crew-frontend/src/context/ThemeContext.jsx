@@ -4,12 +4,12 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("mmc_theme") || "dark"; // dark by default
+    return localStorage.getItem("mmc_theme") || "dark";
   });
 
   useEffect(() => {
     localStorage.setItem("mmc_theme", theme);
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   const value = useMemo(

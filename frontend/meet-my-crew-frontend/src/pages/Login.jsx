@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { saveUser } from "../services/auth";
 import {
   Mail,
   Lock,
@@ -24,25 +25,25 @@ export default function Login() {
   const [err, setErr] = useState("");
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setErr("");
-    setLoading(true);
+  e.preventDefault();
+  setErr("");
+  setLoading(true);
 
-    try {
-      // ✅ adjust endpoint if yours is different
-      await apiRequest("/login.php", "POST", {
-  email: email,
-  password: password,
-});
+  try {
+    const res = await apiRequest("/login.php", "POST", {
+      email: email,
+      password: password,
+    });
 
-      // ✅ after login, go dashboard
-      navigate("/dashboard");
-    } catch (error) {
-      setErr("Invalid email or password.");
-    } finally {
-      setLoading(false);
-    }
+    saveUser(res.user);   // store logged-in user
+    navigate("/dashboard");
+
+  } catch (error) {
+    setErr("Invalid email or password.");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <AuthShell
