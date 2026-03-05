@@ -7,6 +7,8 @@ import {
   MapPin,
   Users,
   UserRoundPlus,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 
 export default function ProjectDetails() {
@@ -17,6 +19,40 @@ export default function ProjectDetails() {
   const [pendingInvitations, setPendingInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(true);
+  const [messagesError, setMessagesError] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+
+  async function fetchMessages(projectId) {
+    setMessagesLoading(true);
+    setMessagesError("");
+
+    try {
+      const res = await fetch(
+        `http://localhost/meet-my-crew/backend/public/project-messages.php?project_id=${encodeURIComponent(projectId)}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to load project messages");
+      }
+
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setMessages([]);
+      setMessagesError(err.message || "Failed to load project messages");
+    } finally {
+      setMessagesLoading(false);
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -76,15 +112,57 @@ export default function ProjectDetails() {
     if (!id) {
       setError("Project id is missing");
       setLoading(false);
+      setMessagesLoading(false);
       return;
     }
 
     loadProjectDetails();
+    fetchMessages(id);
 
     return () => {
       isMounted = false;
     };
   }, [id]);
+
+  async function handleSendMessage(event) {
+    event.preventDefault();
+
+    const message = newMessage.trim();
+    if (!message || !id) return;
+
+    setSendingMessage(true);
+    setMessagesError("");
+
+    try {
+      const res = await fetch(
+        "http://localhost/meet-my-crew/backend/public/send-project-message.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            project_id: Number(id),
+            message,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
+
+      setNewMessage("");
+      await fetchMessages(id);
+    } catch (err) {
+      setMessagesError(err.message || "Failed to send message");
+    } finally {
+      setSendingMessage(false);
+    }
+  }
 
   const formattedDeadline = useMemo(() => {
     if (!project?.deadline) return "No deadline";
@@ -222,6 +300,61 @@ export default function ProjectDetails() {
                 ))}
               </div>
             )}
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">
+              Project Chat
+            </h3>
+
+            <div className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-4 md:p-5">
+              {messagesError ? (
+                <div className="mb-3 rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+                  {messagesError}
+                </div>
+              ) : null}
+
+              <div className="max-h-80 overflow-y-auto space-y-3 pr-1">
+                {messagesLoading ? (
+                  <div className="text-sm text-slate-600 dark:text-white/65">Loading messages...</div>
+                ) : messages.length === 0 ? (
+                  <div className="text-sm text-slate-600 dark:text-white/65">No messages yet.</div>
+                ) : (
+                  messages.map((msg, index) => (
+                    <div key={`${msg.created_at}-${index}`} className="flex">
+                      <div className="max-w-[85%] rounded-2xl border border-white/10 bg-white/70 dark:bg-white/10 px-4 py-3">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/55">
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          <span className="font-semibold text-slate-700 dark:text-white/80">
+                            {msg.sender || "Unknown"}
+                          </span>
+                          <span>•</span>
+                          <span>{msg.created_at || ""}</span>
+                        </div>
+                        <p className="mt-1.5 text-sm text-slate-800 dark:text-white/90">{msg.message}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <form onSubmit={handleSendMessage} className="mt-4 flex items-center gap-2">
+                <input
+                  value={newMessage}
+                  onChange={(event) => setNewMessage(event.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 rounded-xl border border-white/10 bg-white/70 dark:bg-white/10 px-4 py-2.5 text-slate-900 dark:text-white outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={sendingMessage || !newMessage.trim()}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Send className="h-4 w-4" />
+                  {sendingMessage ? "Sending..." : "Send"}
+                </button>
+              </form>
+            </div>
           </section>
         </>
       )}
