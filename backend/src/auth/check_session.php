@@ -1,9 +1,25 @@
 <?php
 // src/auth/check_session.php
 header("Content-Type: application/json");
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  session_start();
+}
 
-if (!isset($_SESSION["user_id"])) {
+$logged_in = isset($_SESSION["user_id"]);
+
+if (defined("CHECK_SESSION_ENFORCE_ONLY") && CHECK_SESSION_ENFORCE_ONLY === true) {
+  if (!$logged_in) {
+    http_response_code(401);
+    echo json_encode([
+      "logged_in" => false,
+      "message" => "Not logged in"
+    ]);
+    exit;
+  }
+  return;
+}
+
+if (!$logged_in) {
   http_response_code(401);
   echo json_encode([
     "logged_in" => false,
