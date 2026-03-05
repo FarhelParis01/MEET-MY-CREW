@@ -3,6 +3,7 @@ import AppLayout from "./layout/AppLayout";
 
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 
 // placeholder pages for now
 const Discover = () => <div className="mmc-pageTitle">Discover</div>;
@@ -24,6 +25,7 @@ export default function App() {
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/creatives" element={<Creatives />} />
         <Route path="/messages" element={<Messages />} />

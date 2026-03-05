@@ -10,19 +10,56 @@ import {
   Instagram,
   Play,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const DEFAULT_USER = {
+  full_name: "Alex Johnson",
+  role: "Director",
+  city: "Yaounde",
+  region: "Centre",
+  email: "alex@email.com",
+  bio: "",
+  skills: [],
+};
+
+function loadStoredUser() {
+  try {
+    const raw = localStorage.getItem("mmc_user");
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (parsed && typeof parsed === "object") {
+      return { ...DEFAULT_USER, ...parsed };
+    }
+  } catch {
+    // fall through to default user
+  }
+  return DEFAULT_USER;
+}
 
 export default function Profile() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(loadStoredUser);
 
-  const user =
-    JSON.parse(localStorage.getItem("mmc_user") || "null") || {
-      full_name: "Alex Johnson",
-      role: "Director",
-      city: "Yaounde",
-      region: "Centre",
-      email: "alex@email.com",
+  useEffect(() => {
+    const syncFromStorage = () => setUser(loadStoredUser());
+    window.addEventListener("focus", syncFromStorage);
+    window.addEventListener("storage", syncFromStorage);
+    return () => {
+      window.removeEventListener("focus", syncFromStorage);
+      window.removeEventListener("storage", syncFromStorage);
     };
+  }, []);
 
-  const skills = ["Video Directing", "Scriptwriting", "Editing", "Producing"];
+  const skills = Array.isArray(user.skills)
+    ? user.skills
+    : typeof user.skills === "string"
+      ? user.skills.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+  const displaySkills =
+    skills.length > 0
+      ? skills
+      : ["Video Directing", "Scriptwriting", "Editing", "Producing"];
 
   const portfolio = [
     { title: "Short Film - The Last Scene" },
@@ -96,9 +133,12 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <button className="bg-[#1f66ff] hover:bg-[#1b59db] text-white px-4 py-2 rounded-xl flex items-center gap-2">
+                <button
+                  onClick={() => navigate("/profile/edit")}
+                  className="bg-[#1f66ff] hover:bg-[#1b59db] text-white px-4 py-2 rounded-xl flex items-center gap-2"
+                >
                   <MessageSquare size={16} />
-                  Message
+                  Edit Profile
                 </button>
 
               </div>
@@ -142,10 +182,9 @@ export default function Profile() {
               About Me
             </h3>
 
-            <p className="text-slate-600 dark:text-white/70 mt-2">
-              Hi, I'm {user.full_name}. I specialize in directing and collaborating
-              with creative professionals. I’m open to projects and building
-              strong creative teams.
+                        <p className="text-slate-600 dark:text-white/70 mt-2">
+              {user.bio ||
+                `Hi, I am ${user.full_name}. I specialize in directing and collaborating with creative professionals. I am open to projects and building strong creative teams.`}
             </p>
 
           </div>
@@ -160,7 +199,7 @@ export default function Profile() {
 
             <div className="flex flex-wrap gap-2 mt-3">
 
-              {skills.map((s) => (
+              {displaySkills.map((s) => (
                 <span
                   key={s}
                   className="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-sm text-slate-800 dark:text-white/85"
@@ -332,3 +371,4 @@ export default function Profile() {
     </div>
   );
 }
+
