@@ -4,9 +4,9 @@ import AppLayout from "./layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
+import Discover from "./pages/Discover";
 
 // placeholder pages for now
-const Discover = () => <div className="mmc-pageTitle">Discover</div>;
 const Creatives = () => <div className="mmc-pageTitle">Search Results</div>;
 const Messages = () => <div className="mmc-pageTitle">Messages</div>;
 const Requests = () => <div className="mmc-pageTitle">Collaboration Requests</div>;
