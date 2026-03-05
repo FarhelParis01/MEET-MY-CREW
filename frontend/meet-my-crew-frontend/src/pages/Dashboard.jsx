@@ -19,7 +19,7 @@ export default function Dashboard() {
       {/* LEFT CONTENT */}
       <section className="col-span-12 lg:col-span-8">
 
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/10 backdrop-blur-xl p-6">
+        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/1 backdrop-blur-xl p-6">
 
           <h3 className="text-2xl font-semibold text-slate-900 dark:text-white/90">
             Welcome back!

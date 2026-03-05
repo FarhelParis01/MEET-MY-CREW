@@ -54,7 +54,7 @@ export default function Profile() {
       {/* MAIN PROFILE CARD */}
       <div className="col-span-12 lg:col-span-8">
 
-        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white backdrop-blur-sm p-6">
+        <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/1 backdrop-blur-sm p-6">
 
           {/* HEADER SECTION */}
           <div className="flex gap-6 items-start">

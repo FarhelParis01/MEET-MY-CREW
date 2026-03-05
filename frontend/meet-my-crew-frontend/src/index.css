@@ -50,8 +50,8 @@ html[data-theme="light"] {
 
 body {
   margin: 0;
-  background: radial-gradient(1200px 800px at 20% 10%, rgba(27,75,255,0.25), transparent 60%),
-              radial-gradient(900px 600px at 90% 20%, rgba(24,210,192,0.18), transparent 55%),
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(255, 255, 255, 0.02), transparent 100%),
+              radial-gradient(900px 600px at 90% 20%, rgba(255, 255, 255, 0.02), transparent 100%),
               var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -61,7 +61,7 @@ body {
 .mmc-sidebar {
   padding: 22px 18px;
   border-right: 1px solid var(--border);
-  background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.02), rgba(255,255,255,0.02)) var(--bg);
   position: sticky; top: 0; height: 100vh;
 }
 .mmc-brand { font-size: 22px; letter-spacing: 0.5px; margin-bottom: 18px; }
@@ -75,7 +75,7 @@ body {
 .mmc-link.active { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
 
 .mmc-logout {
-  margin-top: auto; width: 100%;
+  margin-top: 35px; width: 100%;
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px;
   border-radius: 10px;
