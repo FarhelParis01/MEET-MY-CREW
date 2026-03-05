@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Handshake,
   User,
+  FolderPlus,
   LogOut,
 } from "lucide-react";
 import { apiRequest } from "../services/api";
@@ -16,6 +17,7 @@ const nav = [
   { to: "/creatives", label: "Find Creatives", icon: Users },
   { to: "/messages", label: "Messages", icon: MessageSquare },
   { to: "/requests", label: "Collaboration Requests", icon: Handshake },
+  { to: "/start-project", label: "Start Project", icon: FolderPlus },
   { to: "/profile", label: "Profile", icon: User },
 ];
 

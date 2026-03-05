@@ -7,6 +7,7 @@ import EditProfile from "./pages/EditProfile";
 import Discover from "./pages/Discover";
 import Requests from "./pages/Requests";
 import Messages from "./pages/Messages";
+import StartProject from "./pages/StartProject";
 
 // placeholder pages for now
 const Creatives = () => <div className="mmc-pageTitle">Search Results</div>;
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/creatives" element={<Creatives />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/requests" element={<Requests />} />
+        <Route path="/start-project" element={<StartProject />} />
       </Route>
     </Routes>
   );
