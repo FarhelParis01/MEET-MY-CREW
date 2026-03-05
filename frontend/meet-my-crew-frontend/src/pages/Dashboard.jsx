@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapPin, BadgeCheck, ChevronDown, Search } from "lucide-react";
-import {
-  fetchCollaborationRequests,
-  fetchInbox,
-  getProfile,
-  respondCollaborationRequest,
-} from "../services/api";
+import { getProfile, respondCollaborationRequest } from "../services/api";
 
 const DEFAULT_USER = {
   full_name: "User",
@@ -39,7 +34,12 @@ function formatTimeLabel(isoText) {
 export default function Dashboard() {
   const [user, setUser] = useState(DEFAULT_USER);
   const [inbox, setInbox] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(true);
+  const [messagesError, setMessagesError] = useState("");
+
   const [requests, setRequests] = useState([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
+  const [requestsError, setRequestsError] = useState("");
 
   useEffect(() => {
     getProfile()
@@ -55,13 +55,37 @@ export default function Dashboard() {
         setUser(DEFAULT_USER);
       });
 
-    fetchInbox()
-      .then((res) => setInbox(Array.isArray(res.messages) ? res.messages : []))
-      .catch(() => setInbox([]));
+    fetch("http://localhost/meet-my-crew/backend/public/my-inbox.php", {
+      credentials: "include",
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load messages");
+        setInbox(Array.isArray(data.messages) ? data.messages : []);
+      })
+      .catch((err) => {
+        setInbox([]);
+        setMessagesError(err.message || "Failed to load messages");
+      })
+      .finally(() => {
+        setMessagesLoading(false);
+      });
 
-    fetchCollaborationRequests()
-      .then((res) => setRequests(Array.isArray(res.requests) ? res.requests : []))
-      .catch(() => setRequests([]));
+    fetch("http://localhost/meet-my-crew/backend/public/my-requests.php", {
+      credentials: "include",
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load requests");
+        setRequests(Array.isArray(data.requests) ? data.requests : []);
+      })
+      .catch((err) => {
+        setRequests([]);
+        setRequestsError(err.message || "Failed to load requests");
+      })
+      .finally(() => {
+        setRequestsLoading(false);
+      });
   }, []);
 
   const skills = useMemo(() => {
@@ -142,7 +166,11 @@ export default function Dashboard() {
               </h4>
 
               <div className="mt-4 space-y-4">
-                {inbox.length === 0 ? (
+                {messagesLoading ? (
+                  <div className="text-sm text-slate-600 dark:text-white/60">Loading messages...</div>
+                ) : messagesError ? (
+                  <div className="text-sm text-red-600 dark:text-red-300">{messagesError}</div>
+                ) : inbox.length === 0 ? (
                   <div className="text-sm text-slate-600 dark:text-white/60">No messages yet.</div>
                 ) : (
                   inbox.slice(0, 4).map((m) => (
@@ -186,7 +214,11 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-4 space-y-3">
-              {requests.length === 0 ? (
+              {requestsLoading ? (
+                <div className="text-sm text-slate-600 dark:text-white/60">Loading requests...</div>
+              ) : requestsError ? (
+                <div className="text-sm text-red-600 dark:text-red-300">{requestsError}</div>
+              ) : requests.length === 0 ? (
                 <div className="text-sm text-slate-600 dark:text-white/60">No requests yet.</div>
               ) : (
                 requests.slice(0, 5).map((r) => (
