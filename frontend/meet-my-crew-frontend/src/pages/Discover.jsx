@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { MapPin, Search, UserRound } from "lucide-react";
-import { fetchCreatives, sendCollaborationRequest } from "../services/api";
+import { searchCreatives, sendCollaborationRequest } from "../api/apiClient";
 
 export default function Discover() {
   const [query, setQuery] = useState("");
@@ -10,42 +10,31 @@ export default function Discover() {
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
-    fetchCreatives()
+    let isMounted = true;
+    searchCreatives(query.trim())
       .then((res) => {
+        if (!isMounted) return;
         const users = Array.isArray(res.users) ? res.users : [];
         setCreatives(users);
       })
       .catch((err) => {
+        if (!isMounted) return;
+        setCreatives([]);
         setError(err.message || "Failed to load creatives");
       })
       .finally(() => {
+        if (!isMounted) return;
         setLoading(false);
       });
-  }, []);
 
-  const filteredUsers = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    if (!term) return creatives;
-
-    return creatives.filter((user) => {
-      const roleMatch = user.role.toLowerCase().includes(term);
-      const skills = Array.isArray(user.skills)
-        ? user.skills
-        : String(user.skills || "")
-            .split(",")
-            .map((skill) => skill.trim())
-            .filter(Boolean);
-      const skillMatch = skills.some((skill) => skill.toLowerCase().includes(term));
-      return roleMatch || skillMatch;
-    });
-  }, [query, creatives]);
+    return () => {
+      isMounted = false;
+    };
+  }, [query]);
 
   async function sendRequest(targetUser) {
     try {
-      await sendCollaborationRequest({
-        receiver_id: targetUser.user_id,
-        message: `Hi ${targetUser.full_name}, I would like to collaborate with you.`,
-      });
+      await sendCollaborationRequest(targetUser.user_id);
       setNotice(`Request sent to ${targetUser.full_name}.`);
     } catch (err) {
       setError(err.message || "Failed to send request");
@@ -70,7 +59,7 @@ export default function Discover() {
               <Search className="h-4 w-4 text-[#1f66ff]" />
               <input
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => { setError(""); setLoading(true); setQuery(e.target.value); }}
                 className="w-full bg-transparent outline-none text-slate-900 dark:text-white"
                 placeholder="Search role or skill..."
               />
@@ -95,13 +84,13 @@ export default function Discover() {
         <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
           Loading creatives...
         </div>
-      ) : filteredUsers.length === 0 ? (
+      ) : creatives.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-8 text-center text-slate-600 dark:text-white/70">
           No creatives found for this search.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {filteredUsers.map((user) => (
+          {creatives.map((user) => (
             <article
               key={user.user_id}
               className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5"
@@ -158,7 +147,7 @@ export default function Discover() {
                   onClick={() => sendRequest(user)}
                   className="flex-1 rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white py-2.5 text-sm font-semibold shadow-lg shadow-[#1f66ff]/20"
                 >
-                  Send Request
+                  Connect
                 </button>
               </div>
             </article>
@@ -168,3 +157,4 @@ export default function Discover() {
     </div>
   );
 }
+

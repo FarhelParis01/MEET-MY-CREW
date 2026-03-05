@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProfile } from "../services/api";
 
 const DEFAULT_USER = {
   full_name: "Alex Johnson",
@@ -29,12 +28,16 @@ export default function Profile() {
   const [user, setUser] = useState(DEFAULT_USER);
 
   useEffect(() => {
-    getProfile()
-      .then((res) => {
+    fetch("http://localhost/meet-my-crew/backend/public/my-profile.php", {
+      credentials: "include",
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load profile");
         const merged = {
           ...DEFAULT_USER,
-          ...(res.user || {}),
-          ...((res.profile || {})),
+          ...(data.user || {}),
+          ...(data.profile || {}),
         };
         setUser(merged);
       })
@@ -364,4 +367,5 @@ export default function Profile() {
     </div>
   );
 }
+
 

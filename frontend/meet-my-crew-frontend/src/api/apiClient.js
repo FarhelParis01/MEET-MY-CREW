@@ -61,3 +61,9 @@ export function sendRequest(data) {
     body: JSON.stringify(data),
   });
 }
+export function sendCollaborationRequest(receiver_id) {
+  return request("request-send.php", {
+    method: "POST",
+    body: JSON.stringify({ receiver_id }),
+  });
+}
