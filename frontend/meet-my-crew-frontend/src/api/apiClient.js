@@ -55,15 +55,12 @@ export function searchCreatives(query) {
   return request(endpoint);
 }
 
-export function sendRequest(data) {
+export function sendRequest(receiver_id) {
   return request("request-send.php", {
     method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-export function sendCollaborationRequest(receiver_id) {
-  return request("request-send.php", {
-    method: "POST",
-    body: JSON.stringify({ receiver_id }),
+    body: JSON.stringify({
+      receiver_id,
+      message: "Hi, I would like to collaborate with you.",
+    }),
   });
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MapPin, Search, UserRound } from "lucide-react";
-import { searchCreatives, sendCollaborationRequest } from "../api/apiClient";
+import { searchCreatives, sendRequest } from "../api/apiClient";
 
 export default function Discover() {
   const [query, setQuery] = useState("");
@@ -11,6 +11,7 @@ export default function Discover() {
 
   useEffect(() => {
     let isMounted = true;
+
     searchCreatives(query.trim())
       .then((res) => {
         if (!isMounted) return;
@@ -32,11 +33,13 @@ export default function Discover() {
     };
   }, [query]);
 
-  async function sendRequest(targetUser) {
+  async function handleConnect(targetUser) {
     try {
-      await sendCollaborationRequest(targetUser.user_id);
+      await sendRequest(targetUser.user_id);
+      setError("");
       setNotice(`Request sent to ${targetUser.full_name}.`);
     } catch (err) {
+      setNotice("");
       setError(err.message || "Failed to send request");
     }
   }
@@ -59,7 +62,11 @@ export default function Discover() {
               <Search className="h-4 w-4 text-[#1f66ff]" />
               <input
                 value={query}
-                onChange={(e) => { setError(""); setLoading(true); setQuery(e.target.value); }}
+                onChange={(e) => {
+                  setError("");
+                  setLoading(true);
+                  setQuery(e.target.value);
+                }}
                 className="w-full bg-transparent outline-none text-slate-900 dark:text-white"
                 placeholder="Search role or skill..."
               />
@@ -144,7 +151,7 @@ export default function Discover() {
                   View Profile
                 </button>
                 <button
-                  onClick={() => sendRequest(user)}
+                  onClick={() => handleConnect(user)}
                   className="flex-1 rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white py-2.5 text-sm font-semibold shadow-lg shadow-[#1f66ff]/20"
                 >
                   Connect
@@ -157,4 +164,3 @@ export default function Discover() {
     </div>
   );
 }
-
