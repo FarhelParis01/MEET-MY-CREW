@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/../src/config/cors.php";
+session_start();
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
   http_response_code(405);
@@ -55,6 +56,11 @@ if (($user["status"] ?? "active") !== "active") {
   echo json_encode(["error" => "Account is not active"]);
   exit;
 }
+
+// Create authenticated session for protected endpoints.
+$_SESSION["user_id"] = $user["user_id"];
+$_SESSION["full_name"] = $user["full_name"];
+$_SESSION["account_type"] = $user["account_type"] ?? "user";
 
 // Return user data (do NOT return password_hash)
 unset($user["password_hash"]);

@@ -116,3 +116,6 @@ export async function respondCollaborationRequest({ request_id, action }) {
     body: { request_id, action },
   });
 }
+export async function fetchInbox() {
+  return apiRequest("/my-inbox.php");
+}
