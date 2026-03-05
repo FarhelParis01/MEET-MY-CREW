@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
-import { getTheme, toggleTheme } from "../theme";
+import { useTheme } from "../context/ThemeContext";
 
 export default function AuthShell({ title, subtitle, leftTitle, leftText, bullets, children, bgImage = "/src/assets/bg.jpg" }) {
   const loc = useLocation();
   const isLogin = loc.pathname.includes("login");
+  const { theme, toggleTheme } = useTheme();
 
   const onToggle = () => {
     toggleTheme();
@@ -55,7 +56,7 @@ export default function AuthShell({ title, subtitle, leftTitle, leftText, bullet
                          dark:border-white/10 dark:hover:bg-white/5"
               title="Toggle theme"
             >
-              {getTheme() === "dark" ? (
+              {theme === "dark" ? (
                 <Moon className="w-5 h-5 text-white/80" />
               ) : (
                 <Sun className="w-5 h-5 text-slate-700" />

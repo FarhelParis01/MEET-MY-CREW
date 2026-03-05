@@ -1,57 +1,44 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* Theme tokens using CSS variables */
+/* Unified theme tokens */
 :root {
-  --bg: 248 250 252;        /* light background */
-  --panel: 255 255 255;     /* card/panel */
-  --text: 15 23 42;         /* slate-900 */
-  --muted: 71 85 105;       /* slate-600 */
-  --border: 226 232 240;    /* slate-200 */
-
-  --primary: 45 107 255;    /* electric blue */
-  --accent: 20 184 166;     /* teal */
+  --bg: #f3f6fb;
+  --panel: rgba(255, 255, 255, 0.72);
+  --panel2: rgba(255, 255, 255, 0.92);
+  --text: rgba(11, 18, 32, 0.92);
+  --muted: rgba(15, 23, 42, 0.58);
+  --border: rgba(27, 75, 255, 0.16);
+  --primary: #1b4bff;
+  --accent: #18d2c0;
+  --accent2: #00b3c7;
+  --bg-grad-1: rgba(27, 75, 255, 0.12);
+  --bg-grad-2: rgba(24, 210, 192, 0.1);
 }
 
 .dark {
-  --bg: 11 18 32;           /* deep navy */
-  --panel: 17 24 39;        /* slate-900-ish */
-  --text: 226 232 240;      /* slate-200 */
-  --muted: 148 163 184;     /* slate-400 */
-  --border: 51 65 85;       /* slate-700 */
-
-  --primary: 45 107 255;
-  --accent: 20 184 166;
+  --bg: #0b1020;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panel2: rgba(255, 255, 255, 0.09);
+  --text: rgba(255, 255, 255, 0.92);
+  --muted: rgba(226, 232, 240, 0.68);
+  --border: rgba(148, 163, 184, 0.18);
+  --primary: #1f66ff;
+  --accent: #00b3c7;
+  --accent2: #18d2c0;
+  --bg-grad-1: rgba(27, 75, 255, 0.18);
+  --bg-grad-2: rgba(0, 179, 199, 0.16);
 }
 
-/* Optional smooth theme transition */
 * {
   transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
 }
 
-:root {
-  --bg: #0b1020;
-  --panel: rgba(255,255,255,0.06);
-  --panel2: rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.08);
-  --text: rgba(255,255,255,0.92);
-  --muted: rgba(255,255,255,0.65);
-  --accent: #1b4bff;
-  --accent2: #18d2c0;
-}
-
-html[data-theme="light"] {
-  --bg: #f6f7fb;
-  --panel: rgba(0,0,0,0.04);
-  --panel2: rgba(0,0,0,0.06);
-  --border: rgba(0,0,0,0.08);
-  --text: rgba(0,0,0,0.88);
-  --muted: rgba(0,0,0,0.55);
-}
-
 body {
   margin: 0;
-  background: radial-gradient(1200px 800px at 20% 10%, rgba(255, 255, 255, 0.02), transparent 100%),
-              radial-gradient(900px 600px at 90% 20%, rgba(255, 255, 255, 0.02), transparent 100%),
+  background:
+    radial-gradient(1200px 800px at 8% 4%, var(--bg-grad-1), transparent 60%),
+    radial-gradient(900px 600px at 88% 12%, var(--bg-grad-2), transparent 62%),
               var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -126,7 +113,7 @@ body {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.55);
   border: 1px solid rgba(255,255,255,0.15);
   color: white;
   cursor: pointer;

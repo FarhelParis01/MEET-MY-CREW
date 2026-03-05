@@ -109,21 +109,21 @@ export default function Profile() {
 
                 <div className="bg-white/10 rounded-xl p-4">
                   <div className="text-2xl font-semibold">254</div>
-                  <div className="text-sm text-white/60">
+                  <div className="text-sm text-slate-500 dark:text-white/60">
                     Total Connections
                   </div>
                 </div>
 
                 <div className="bg-white/10 rounded-xl p-4">
                   <div className="text-2xl font-semibold">12</div>
-                  <div className="text-sm text-white/60">
+                  <div className="text-sm text-slate-500 dark:text-white/60">
                     Projects Completed
                   </div>
                 </div>
 
                 <div className="bg-white/10 rounded-xl p-4">
                   <div className="text-2xl font-semibold">8</div>
-                  <div className="text-sm text-white/60">
+                  <div className="text-sm text-slate-500 dark:text-white/60">
                     Years Experience
                   </div>
                 </div>
@@ -142,7 +142,7 @@ export default function Profile() {
               About Me
             </h3>
 
-            <p className="text-white/70 mt-2">
+            <p className="text-slate-600 dark:text-white/70 mt-2">
               Hi, I'm {user.full_name}. I specialize in directing and collaborating
               with creative professionals. I’m open to projects and building
               strong creative teams.
@@ -163,7 +163,7 @@ export default function Profile() {
               {skills.map((s) => (
                 <span
                   key={s}
-                  className="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-sm"
+                  className="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-sm text-slate-800 dark:text-white/85"
                 >
                   {s}
                 </span>
@@ -202,7 +202,7 @@ export default function Profile() {
 
             </div>
 
-            <button className="mt-4 w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl">
+            <button className="mt-4 w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-slate-900 dark:text-white">
               View All Projects
             </button>
 
@@ -231,7 +231,7 @@ export default function Profile() {
 
                       <div>
                         <div className="font-semibold">{r.name}</div>
-                        <div className="text-xs text-white/60">
+                        <div className="text-xs text-slate-500 dark:text-white/60">
                           {r.role}
                         </div>
                       </div>
@@ -245,7 +245,7 @@ export default function Profile() {
 
                   </div>
 
-                  <p className="text-sm text-white/70 mt-3">
+                  <p className="text-sm text-slate-600 dark:text-white/70 mt-3">
                     {r.text}
                   </p>
 
@@ -270,7 +270,7 @@ export default function Profile() {
             Contact
           </h3>
 
-          <div className="space-y-3 text-white/70">
+          <div className="space-y-3 text-slate-600 dark:text-white/70">
 
             <div className="flex items-center gap-2">
               <MapPin size={16} />
@@ -297,15 +297,15 @@ export default function Profile() {
 
             <div className="flex gap-3">
 
-              <button className="bg-white/10 p-2 rounded-lg">
+              <button className="bg-white/10 p-2 rounded-lg text-slate-800 dark:text-white">
                 <Instagram size={16} />
               </button>
 
-              <button className="bg-white/10 p-2 rounded-lg">
+              <button className="bg-white/10 p-2 rounded-lg text-slate-800 dark:text-white">
                 <Twitter size={16} />
               </button>
 
-              <button className="bg-white/10 p-2 rounded-lg">
+              <button className="bg-white/10 p-2 rounded-lg text-slate-800 dark:text-white">
                 <Linkedin size={16} />
               </button>
 
@@ -319,7 +319,7 @@ export default function Profile() {
               Availability
             </h4>
 
-            <div className="bg-white/10 px-4 py-3 rounded-xl">
+            <div className="bg-white/10 px-4 py-3 rounded-xl text-slate-800 dark:text-white/90">
               Open to new projects
             </div>
 

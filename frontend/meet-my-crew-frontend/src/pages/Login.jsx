@@ -38,7 +38,7 @@ export default function Login() {
     saveUser(res.user);   // store logged-in user
     navigate("/dashboard");
 
-  } catch (error) {
+  } catch {
     setErr("Invalid email or password.");
   } finally {
     setLoading(false);
