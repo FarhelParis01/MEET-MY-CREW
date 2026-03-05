@@ -1,50 +1,41 @@
-import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, MapPin, BriefcaseBusiness, Inbox } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BriefcaseBusiness, CalendarDays, Inbox, MapPin } from "lucide-react";
 
-const PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/my-projects.php";
-const INVITES_URL = "http://localhost/meet-my-crew/backend/public/my-invites.php";
+const MY_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/my-projects.php";
+const MY_INVITES_URL = "http://localhost/meet-my-crew/backend/public/my-invites.php";
 const RESPOND_INVITE_URL = "http://localhost/meet-my-crew/backend/public/respond-invite.php";
 
-function asArray(value) {
-  return Array.isArray(value) ? value : [];
-}
-
-function normalizeProjectsResponse(data) {
+function normalizeProjects(payload) {
   return {
-    created: asArray(
-      data.created_projects ?? data.projects_created ?? data.created ?? data.my_projects
-    ),
-    joined: asArray(
-      data.joined_projects ?? data.projects_joined ?? data.joined ?? data.member_projects
-    ),
+    projectsCreated: Array.isArray(payload?.projects_created)
+      ? payload.projects_created
+      : [],
+    projectsJoined: Array.isArray(payload?.projects_joined)
+      ? payload.projects_joined
+      : [],
   };
 }
 
-function normalizeInvitesResponse(data) {
-  const invites = asArray(data.pending_invites ?? data.invites ?? data.requests);
-  return invites.filter((invite) => {
-    const status = String(invite.status || "pending").toLowerCase();
-    return status === "pending";
-  });
+function normalizeInvites(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.invites)) return payload.invites;
+  if (Array.isArray(payload?.pending_invites)) return payload.pending_invites;
+  return [];
 }
 
-function formatDeadline(value) {
-  if (!value) return "No deadline";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString([], {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+function formatDeadline(deadline) {
+  if (!deadline) return "No deadline";
+  const date = new Date(deadline);
+  if (Number.isNaN(date.getTime())) return deadline;
+  return date.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
 }
 
 function ProjectCard({ project }) {
   return (
     <article className="rounded-2xl border border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-xl p-5">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+      <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
         {project.title || "Untitled Project"}
-      </h3>
+      </h4>
 
       <div className="mt-4 space-y-2 text-sm text-slate-700 dark:text-white/70">
         <div className="flex items-center gap-2">
@@ -67,14 +58,38 @@ function ProjectCard({ project }) {
 }
 
 export default function MyProjects() {
-  const [createdProjects, setCreatedProjects] = useState([]);
-  const [joinedProjects, setJoinedProjects] = useState([]);
-  const [pendingInvites, setPendingInvites] = useState([]);
+  const [projectsCreated, setProjectsCreated] = useState([]);
+  const [projectsJoined, setProjectsJoined] = useState([]);
+  const [invites, setInvites] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [actingInviteId, setActingInviteId] = useState(null);
+
+  async function fetchProjects() {
+    const res = await fetch(MY_PROJECTS_URL, { credentials: "include" });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to load projects");
+    }
+
+    const normalized = normalizeProjects(data);
+    setProjectsCreated(normalized.projectsCreated);
+    setProjectsJoined(normalized.projectsJoined);
+  }
+
+  async function fetchInvites() {
+    const res = await fetch(MY_INVITES_URL, { credentials: "include" });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to load invitations");
+    }
+
+    setInvites(normalizeInvites(data));
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -85,8 +100,8 @@ export default function MyProjects() {
 
       try {
         const [projectsRes, invitesRes] = await Promise.all([
-          fetch(PROJECTS_URL, { credentials: "include" }),
-          fetch(INVITES_URL, { credentials: "include" }),
+          fetch(MY_PROJECTS_URL, { credentials: "include" }),
+          fetch(MY_INVITES_URL, { credentials: "include" }),
         ]);
 
         const projectsData = await projectsRes.json();
@@ -100,18 +115,17 @@ export default function MyProjects() {
           throw new Error(invitesData.error || "Failed to load invitations");
         }
 
-        const normalizedProjects = normalizeProjectsResponse(projectsData || {});
-        const normalizedInvites = normalizeInvitesResponse(invitesData || {});
-
         if (!isMounted) return;
-        setCreatedProjects(normalizedProjects.created);
-        setJoinedProjects(normalizedProjects.joined);
-        setPendingInvites(normalizedInvites);
+
+        const normalizedProjects = normalizeProjects(projectsData);
+        setProjectsCreated(normalizedProjects.projectsCreated);
+        setProjectsJoined(normalizedProjects.projectsJoined);
+        setInvites(normalizeInvites(invitesData));
       } catch (err) {
         if (!isMounted) return;
-        setCreatedProjects([]);
-        setJoinedProjects([]);
-        setPendingInvites([]);
+        setProjectsCreated([]);
+        setProjectsJoined([]);
+        setInvites([]);
         setError(err.message || "Failed to load project data");
       } finally {
         if (!isMounted) return;
@@ -126,7 +140,7 @@ export default function MyProjects() {
     };
   }, []);
 
-  async function respondToInvite(inviteId, action) {
+  async function handleInviteAction(inviteId, action) {
     setError("");
     setNotice("");
     setActingInviteId(inviteId);
@@ -138,39 +152,33 @@ export default function MyProjects() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ invite_id: inviteId, action }),
+        body: JSON.stringify({
+          invite_id: inviteId,
+          action,
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to update invitation");
+        throw new Error(data.error || "Failed to respond to invitation");
       }
 
-      setPendingInvites((prev) =>
-        prev.filter((invite) => {
-          const id = invite.invite_id ?? invite.id;
-          return Number(id) !== Number(inviteId);
-        })
-      );
-
       setNotice(data.message || (action === "accept" ? "Invitation accepted" : "Invitation rejected"));
+      await fetchInvites();
     } catch (err) {
-      setError(err.message || "Failed to update invitation");
+      setError(err.message || "Failed to respond to invitation");
     } finally {
       setActingInviteId(null);
     }
   }
-
-  const createdCount = useMemo(() => createdProjects.length, [createdProjects]);
-  const joinedCount = useMemo(() => joinedProjects.length, [joinedProjects]);
 
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6">
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-white/90">My Projects</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-white/65">
-          Manage projects you created, projects you joined, and pending invitations.
+          Review projects you created, projects you joined, and pending invitations.
         </p>
       </section>
 
@@ -193,18 +201,15 @@ export default function MyProjects() {
       ) : (
         <>
           <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Projects I Created</h3>
-              <span className="text-sm text-slate-600 dark:text-white/65">{createdCount}</span>
-            </div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Projects I Created</h3>
 
-            {createdProjects.length === 0 ? (
+            {projectsCreated.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
                 You have not created any projects yet.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {createdProjects.map((project) => (
+                {projectsCreated.map((project) => (
                   <ProjectCard key={project.id || project.project_id || project.title} project={project} />
                 ))}
               </div>
@@ -212,18 +217,15 @@ export default function MyProjects() {
           </section>
 
           <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Projects I Joined</h3>
-              <span className="text-sm text-slate-600 dark:text-white/65">{joinedCount}</span>
-            </div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Projects I Joined</h3>
 
-            {joinedProjects.length === 0 ? (
+            {projectsJoined.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
                 You have not joined any projects yet.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {joinedProjects.map((project) => (
+                {projectsJoined.map((project) => (
                   <ProjectCard key={project.id || project.project_id || project.title} project={project} />
                 ))}
               </div>
@@ -233,14 +235,14 @@ export default function MyProjects() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white/90">Pending Invitations</h3>
 
-            {pendingInvites.length === 0 ? (
+            {invites.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl p-6 text-sm text-slate-600 dark:text-white/70">
                 No pending invitations.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {pendingInvites.map((invite) => {
-                  const inviteId = invite.invite_id ?? invite.id;
+                {invites.map((invite) => {
+                  const inviteId = invite.id || invite.invite_id;
                   return (
                     <article
                       key={inviteId}
@@ -252,7 +254,7 @@ export default function MyProjects() {
                       </div>
 
                       <h4 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                        {invite.project_title || invite.title || "Project Invitation"}
+                        {invite.title || invite.project_title || "Project Invitation"}
                       </h4>
 
                       <p className="mt-2 text-sm text-slate-700 dark:text-white/70">
@@ -262,14 +264,15 @@ export default function MyProjects() {
                       <div className="mt-4 flex items-center gap-2">
                         <button
                           disabled={actingInviteId === inviteId}
-                          onClick={() => respondToInvite(inviteId, "accept")}
+                          onClick={() => handleInviteAction(inviteId, "accept")}
                           className="rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white px-4 py-2 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           Accept
                         </button>
+
                         <button
                           disabled={actingInviteId === inviteId}
-                          onClick={() => respondToInvite(inviteId, "reject")}
+                          onClick={() => handleInviteAction(inviteId, "reject")}
                           className="rounded-xl bg-white/70 hover:bg-white text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white px-4 py-2 text-sm font-semibold border border-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           Reject

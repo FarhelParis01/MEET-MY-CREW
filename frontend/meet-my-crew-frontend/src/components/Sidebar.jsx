@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
+  Folder,
   Compass,
   Users,
   MessageSquare,
@@ -13,6 +14,7 @@ import { apiRequest } from "../services/api";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/my-projects", label: "My Projects", icon: Folder },
   { to: "/discover", label: "Discover", icon: Compass },
   { to: "/creatives", label: "Find Creatives", icon: Users },
   { to: "/messages", label: "Messages", icon: MessageSquare },
