@@ -1,50 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
-import { MessageSquare, Send, UserRound } from "lucide-react";
-import { getProfile } from "../services/api";
+import { useSearchParams } from "react-router-dom";
+import { MessageSquare, Send, Users } from "lucide-react";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
 
-const MESSAGES_KEY = "mmc_messages";
+const MY_PROFILE_URL = "http://localhost/meet-my-crew/backend/public/my-profile.php";
+const GET_MESSAGES_URL = "http://localhost/meet-my-crew/backend/public/get-messages.php";
+const SEND_MESSAGE_URL = "http://localhost/meet-my-crew/backend/public/send-message.php";
+const GET_PROJECT_MESSAGES_URL = "http://localhost/meet-my-crew/backend/public/get-project-messages.php";
+const SEND_PROJECT_MESSAGE_URL = "http://localhost/meet-my-crew/backend/public/send-project-message.php";
+const MY_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/my-projects.php";
 
-const starterConversations = [
-  {
-    id: 101,
-    full_name: "Sarah Williams",
-    role: "Cinematographer",
-    profile_image: "https://i.pravatar.cc/120?img=31",
-  },
-  {
-    id: 102,
-    full_name: "Michael Chen",
-    role: "Actor",
-    profile_image: "https://i.pravatar.cc/120?img=12",
-  },
-  {
-    id: 103,
-    full_name: "Emily Davis",
-    role: "Editor",
-    profile_image: "https://i.pravatar.cc/120?img=25",
-  },
-];
-
-const DEFAULT_CURRENT_USER = {
-  user_id: "guest-user",
-  full_name: "Current User",
-  role: "Creative",
-};
-
-function loadMessages() {
-  try {
-    const raw = localStorage.getItem(MESSAGES_KEY);
-    const list = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list : [];
-  } catch {
-    return [];
-  }
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
 }
 
-function formatTimestamp(iso) {
-  if (!iso) return "";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
+function parseId(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function formatTimestamp(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString([], {
     month: "short",
     day: "numeric",
@@ -53,233 +32,424 @@ function formatTimestamp(iso) {
   });
 }
 
-export default function Messages() {
-  const [currentUser, setCurrentUser] = useState(DEFAULT_CURRENT_USER);
-  const currentUserId = currentUser.user_id ?? currentUser.id ?? currentUser.full_name;
+async function parseJsonSafe(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
 
-  const [messages, setMessages] = useState(loadMessages);
-  const [activeConversationId, setActiveConversationId] = useState(
-    starterConversations[0]?.id ?? null
-  );
+function getDirectConversations(messages, currentUserId) {
+  const map = new Map();
+
+  asArray(messages).forEach((msg) => {
+    const senderId = parseId(msg.sender_id);
+    const receiverId = parseId(msg.receiver_id);
+
+    if (!senderId || !receiverId || !currentUserId) return;
+
+    const otherId = senderId === currentUserId ? receiverId : senderId;
+    const otherName = senderId === currentUserId ? msg.receiver_name : msg.sender_name;
+
+    if (!map.has(otherId)) {
+      map.set(otherId, {
+        id: otherId,
+        name: otherName || `User #${otherId}`,
+        lastAt: msg.sent_at || "",
+      });
+    }
+  });
+
+  return Array.from(map.values()).sort((a, b) => {
+    return new Date(b.lastAt || 0) - new Date(a.lastAt || 0);
+  });
+}
+
+export default function Messages() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [directConversations, setDirectConversations] = useState([]);
+  const [projectChats, setProjectChats] = useState([]);
+  const [activeMode, setActiveMode] = useState("direct");
+  const [activeId, setActiveId] = useState(null);
+
+  const [chatMessages, setChatMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const selectedUserId = parseId(searchParams.get("user_id"));
+  const selectedProjectId = parseId(searchParams.get("project_id"));
+
+  const chatTitle = useMemo(() => {
+    if (activeMode === "project") {
+      const project = projectChats.find((p) => p.id === activeId);
+      return project?.title || "Project Chat";
+    }
+
+    const direct = directConversations.find((d) => d.id === activeId);
+    return direct?.name || "Direct Chat";
+  }, [activeMode, activeId, directConversations, projectChats]);
+
+  async function fetchProfile() {
+    const res = await fetch(MY_PROFILE_URL, { credentials: "include" });
+    const data = await parseJsonSafe(res);
+    if (!res.ok) throw new Error(data?.error || "Failed to load profile");
+
+    const uid = parseId(data?.user?.user_id ?? data?.user_id ?? data?.id);
+    setCurrentUserId(uid);
+    return uid;
+  }
+
+  async function fetchDirectConversationList(uid) {
+    const res = await fetch(GET_MESSAGES_URL, { credentials: "include" });
+    const data = await parseJsonSafe(res);
+    if (!res.ok) throw new Error(data?.error || "Failed to load direct messages");
+
+    const messages = asArray(data?.messages);
+    setDirectConversations(getDirectConversations(messages, uid));
+  }
+
+  async function fetchProjectChatList() {
+    const res = await fetch(MY_PROJECTS_URL, { credentials: "include" });
+    const data = await parseJsonSafe(res);
+    if (!res.ok) throw new Error(data?.error || "Failed to load projects");
+
+    const created = asArray(data?.projects_created);
+    const joined = asArray(data?.projects_joined);
+    const map = new Map();
+
+    [...created, ...joined].forEach((project) => {
+      const id = parseId(project.id ?? project.project_id);
+      if (!id) return;
+      if (!map.has(id)) {
+        map.set(id, {
+          id,
+          title: project.title || `Project #${id}`,
+        });
+      }
+    });
+
+    setProjectChats(Array.from(map.values()));
+  }
+
+  async function loadDirectMessages(userId) {
+    const res = await fetch(`${GET_MESSAGES_URL}?user_id=${encodeURIComponent(userId)}`, {
+      credentials: "include",
+    });
+    const data = await parseJsonSafe(res);
+    if (!res.ok) throw new Error(data?.error || "Failed to load direct conversation");
+
+    const messages = asArray(data?.messages).map((msg) => ({
+      id: msg.message_id,
+      sender_id: parseId(msg.sender_id),
+      sender: msg.sender_name,
+      text: msg.message_text,
+      timestamp: msg.sent_at,
+    }));
+
+    setChatMessages(messages);
+  }
+
+  async function loadProjectMessages(projectId) {
+    const res = await fetch(`${GET_PROJECT_MESSAGES_URL}?project_id=${encodeURIComponent(projectId)}`, {
+      credentials: "include",
+    });
+    const data = await parseJsonSafe(res);
+    if (!res.ok) throw new Error(data?.error || "Failed to load project chat");
+
+    const messages = asArray(data?.messages).map((msg, idx) => ({
+      id: msg.id ?? `${projectId}-${idx}`,
+      sender_id: parseId(msg.sender_id),
+      sender: msg.sender,
+      text: msg.message,
+      timestamp: msg.created_at,
+    }));
+
+    setChatMessages(messages);
+  }
 
   useEffect(() => {
-    getProfile()
-      .then((res) => {
-        setCurrentUser(
-          res.user ? { ...DEFAULT_CURRENT_USER, ...res.user } : DEFAULT_CURRENT_USER
-        );
-      })
-      .catch(() => {
-        setCurrentUser(DEFAULT_CURRENT_USER);
-      });
+    let mounted = true;
+
+    async function bootstrap() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const uid = await fetchProfile();
+        if (!mounted) return;
+
+        await Promise.all([fetchDirectConversationList(uid), fetchProjectChatList()]);
+      } catch (err) {
+        if (!mounted) return;
+        setError(err.message || "Failed to load conversations");
+      } finally {
+        if (!mounted) return;
+        setLoading(false);
+      }
+    }
+
+    bootstrap();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const conversationMap = useMemo(() => {
-    const map = new Map(starterConversations.map((c) => [c.id, c]));
+  useEffect(() => {
+    if (selectedProjectId) {
+      setActiveMode("project");
+      setActiveId(selectedProjectId);
+      return;
+    }
 
-    messages.forEach((message) => {
-      if (message.sender_id !== currentUserId && !map.has(message.sender_id)) {
-        map.set(message.sender_id, {
-          id: message.sender_id,
-          full_name: message.sender_name || "Unknown User",
-          role: "Creative",
-          profile_image: `https://i.pravatar.cc/120?u=${encodeURIComponent(
-            message.sender_name || String(message.sender_id)
-          )}`,
-        });
+    if (selectedUserId) {
+      setActiveMode("direct");
+      setActiveId(selectedUserId);
+      return;
+    }
+
+    if (directConversations.length > 0) {
+      setActiveMode("direct");
+      setActiveId(directConversations[0].id);
+      setSearchParams({ user_id: String(directConversations[0].id) });
+      return;
+    }
+
+    if (projectChats.length > 0) {
+      setActiveMode("project");
+      setActiveId(projectChats[0].id);
+      setSearchParams({ project_id: String(projectChats[0].id) });
+    }
+  }, [selectedUserId, selectedProjectId, directConversations, projectChats, setSearchParams]);
+
+  useEffect(() => {
+    if (!activeId) {
+      setChatMessages([]);
+      return;
+    }
+
+    let canceled = false;
+
+    async function loadCurrentChat() {
+      setLoading(true);
+      setError("");
+
+      try {
+        if (activeMode === "project") {
+          await loadProjectMessages(activeId);
+        } else {
+          await loadDirectMessages(activeId);
+        }
+      } catch (err) {
+        if (canceled) return;
+        setChatMessages([]);
+        setError(err.message || "Failed to load chat messages");
+      } finally {
+        if (canceled) return;
+        setLoading(false);
       }
+    }
 
-      if (
-        message.receiver_id !== currentUserId &&
-        !map.has(message.receiver_id)
-      ) {
-        map.set(message.receiver_id, {
-          id: message.receiver_id,
-          full_name: message.receiver_name || "Unknown User",
-          role: "Creative",
-          profile_image: `https://i.pravatar.cc/120?u=${encodeURIComponent(
-            message.receiver_name || String(message.receiver_id)
-          )}`,
-        });
-      }
-    });
+    loadCurrentChat();
 
-    return map;
-  }, [messages, currentUserId]);
-
-  const conversations = useMemo(
-    () => Array.from(conversationMap.values()),
-    [conversationMap]
-  );
-
-  const activeConversation = useMemo(
-    () =>
-      conversations.find((conversation) => conversation.id === activeConversationId) ||
-      conversations[0] ||
-      null,
-    [conversations, activeConversationId]
-  );
-
-  const filteredMessages = useMemo(() => {
-    if (!activeConversation) return [];
-
-    return messages.filter((message) => {
-      const isOutgoing =
-        message.sender_id === currentUserId &&
-        message.receiver_id === activeConversation.id;
-      const isIncoming =
-        message.receiver_id === currentUserId &&
-        message.sender_id === activeConversation.id;
-      return isOutgoing || isIncoming;
-    });
-  }, [messages, currentUserId, activeConversation]);
-
-  function sendMessage(e) {
-    e.preventDefault();
-    const text = draft.trim();
-    if (!text || !activeConversation) return;
-
-    const nextMessage = {
-      id: `${currentUserId}-${activeConversation.id}-${messages.length + 1}`,
-      sender: currentUser.full_name || "Current User",
-      sender_id: currentUserId,
-      sender_name: currentUser.full_name || "Current User",
-      receiver_id: activeConversation.id,
-      receiver_name: activeConversation.full_name,
-      text,
-      timestamp: new Date().toISOString(),
+    return () => {
+      canceled = true;
     };
+  }, [activeMode, activeId]);
 
-    const nextMessages = [...messages, nextMessage];
-    setMessages(nextMessages);
-    localStorage.setItem(MESSAGES_KEY, JSON.stringify(nextMessages));
-    setDraft("");
+  function selectDirectConversation(userId) {
+    setActiveMode("direct");
+    setActiveId(userId);
+    setSearchParams({ user_id: String(userId) });
+  }
+
+  function selectProjectChat(projectId) {
+    setActiveMode("project");
+    setActiveId(projectId);
+    setSearchParams({ project_id: String(projectId) });
+  }
+
+  async function handleSendMessage(event) {
+    event.preventDefault();
+    const text = draft.trim();
+    if (!text || !activeId) return;
+
+    setSending(true);
+    setError("");
+
+    try {
+      if (activeMode === "project") {
+        const response = await fetch(SEND_PROJECT_MESSAGE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            project_id: activeId,
+            message: text,
+          }),
+        });
+
+        const data = await parseJsonSafe(response);
+        if (!response.ok) {
+          throw new Error(data?.error || "Failed to send project message");
+        }
+
+        await loadProjectMessages(activeId);
+      } else {
+        const response = await fetch(SEND_MESSAGE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            receiver_id: activeId,
+            message_text: text,
+          }),
+        });
+
+        const data = await parseJsonSafe(response);
+        if (!response.ok) {
+          throw new Error(data?.error || "Failed to send direct message");
+        }
+
+        await Promise.all([loadDirectMessages(activeId), fetchDirectConversationList(currentUserId)]);
+      }
+
+      setDraft("");
+    } catch (err) {
+      setError(err.message || "Failed to send message");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
-    <div className="grid grid-cols-12 gap-6 min-h-[70vh]">
-      <aside className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4">
-        <h2 className="px-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Conversations
-        </h2>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[70vh]">
+      <aside className="lg:col-span-4">
+        <Card className="p-4 h-full">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Conversations</h2>
 
-        <div className="mt-4 space-y-2">
-          {conversations.map((conversation) => (
-            <button
-              key={conversation.id}
-              onClick={() => setActiveConversationId(conversation.id)}
-              className={`w-full text-left rounded-xl border px-3 py-3 transition ${
-                activeConversation?.id === conversation.id
-                  ? "border-[#1f66ff]/40 bg-[#1f66ff]/10"
-                  : "border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <img
-                  src={conversation.profile_image}
-                  alt={conversation.full_name}
-                  className="h-10 w-10 rounded-full object-cover"
-                />
-                <div>
-                  <div className="font-semibold text-slate-900 dark:text-slate-100">
-                    {conversation.full_name}
-                  </div>
-                  <div className="text-xs text-slate-600 dark:text-white/60">
-                    {conversation.role}
-                  </div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </aside>
-
-      <section className="col-span-12 lg:col-span-8 rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4 md:p-5 flex flex-col">
-        {activeConversation ? (
-          <>
-            <div className="pb-4 border-b border-white/10 flex items-center gap-3">
-              <img
-                src={activeConversation.profile_image}
-                alt={activeConversation.full_name}
-                className="h-11 w-11 rounded-full object-cover"
-              />
-              <div>
-                <div className="font-semibold text-slate-900 dark:text-slate-100">
-                  {activeConversation.full_name}
-                </div>
-                <div className="text-xs text-slate-600 dark:text-white/60">
-                  {activeConversation.role}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex-1 py-4 space-y-3 overflow-y-auto">
-              {filteredMessages.length === 0 ? (
-                <div className="h-full min-h-[260px] grid place-items-center text-center text-slate-600 dark:text-white/65">
-                  <div>
-                    <MessageSquare className="mx-auto mb-2 h-6 w-6 text-[#00b3c7]" />
-                    No messages yet. Start the conversation.
-                  </div>
-                </div>
+          <div className="mt-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Direct Conversations
+            </p>
+            <div className="space-y-2">
+              {directConversations.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 px-2">No direct chats yet.</p>
               ) : (
-                filteredMessages.map((message) => {
-                  const isMine = message.sender_id === currentUserId;
-                  return (
-                    <div
-                      key={message.id}
-                      className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                          isMine
-                            ? "bg-[#1f66ff] text-white"
-                            : "bg-white/70 dark:bg-white/10 text-slate-900 dark:text-slate-100"
-                        }`}
-                      >
-                        <div className="text-xs opacity-80 mb-1">
-                          {message.sender}
-                        </div>
-                        <div className="text-sm">{message.text}</div>
-                        <div className="mt-1 text-[11px] opacity-75">
-                          {formatTimestamp(message.timestamp)}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
+                directConversations.map((conversation) => (
+                  <button
+                    key={`direct-${conversation.id}`}
+                    onClick={() => selectDirectConversation(conversation.id)}
+                    className={`w-full text-left rounded-lg border px-3 py-2 transition ${
+                      activeMode === "direct" && activeId === conversation.id
+                        ? "border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20"
+                        : "border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{conversation.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{formatTimestamp(conversation.lastAt)}</p>
+                  </button>
+                ))
               )}
             </div>
+          </div>
 
-            <form onSubmit={sendMessage} className="pt-4 border-t border-white/10">
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-3 py-2">
-                <input
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
-                  placeholder="Type a message..."
-                />
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-1 rounded-lg bg-[#1f66ff] hover:bg-[#1b59db] text-white px-3 py-2 text-sm font-semibold"
-                >
-                  <Send size={14} />
-                  Send
-                </button>
-              </div>
-            </form>
-          </>
-        ) : (
-          <div className="h-full min-h-[320px] grid place-items-center text-slate-600 dark:text-white/65">
-            <div className="text-center">
-              <UserRound className="mx-auto mb-2 h-6 w-6 text-[#00b3c7]" />
-              No conversation selected.
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Project Chats
+            </p>
+            <div className="space-y-2">
+              {projectChats.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 px-2">No project chats available.</p>
+              ) : (
+                projectChats.map((project) => (
+                  <button
+                    key={`project-${project.id}`}
+                    onClick={() => selectProjectChat(project.id)}
+                    className={`w-full text-left rounded-lg border px-3 py-2 transition ${
+                      activeMode === "project" && activeId === project.id
+                        ? "border-teal-300 bg-teal-50 dark:border-teal-700 dark:bg-teal-900/20"
+                        : "border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{project.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Project #{project.id}</p>
+                  </button>
+                ))
+              )}
             </div>
           </div>
-        )}
+        </Card>
+      </aside>
+
+      <section className="lg:col-span-8">
+        <Card className="p-4 h-full flex flex-col">
+          <div className="pb-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2">
+              {activeMode === "project" ? <Users size={16} className="text-teal-500" /> : <MessageSquare size={16} className="text-blue-600" />}
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{chatTitle}</h3>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {activeMode === "project" ? "Project chat" : "Direct messages"}
+            </p>
+          </div>
+
+          {error ? (
+            <Card className="mt-3 p-3 border-red-200 dark:border-red-700">
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            </Card>
+          ) : null}
+
+          <div className="flex-1 mt-3 space-y-2 overflow-y-auto min-h-[320px]">
+            {loading ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loading messages...</p>
+            ) : !activeId ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Select a conversation to start chatting.</p>
+            ) : chatMessages.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">No messages yet.</p>
+            ) : (
+              chatMessages.map((message) => {
+                const isMine = currentUserId && parseId(message.sender_id) === currentUserId;
+                return (
+                  <div key={message.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[85%] rounded-xl px-3 py-2 ${
+                        isMine
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                      }`}
+                    >
+                      <p className="text-xs opacity-80">{message.sender || "Unknown"}</p>
+                      <p className="text-sm">{message.text}</p>
+                      <p className="text-[11px] opacity-75 mt-1">{formatTimestamp(message.timestamp)}</p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <form onSubmit={handleSendMessage} className="pt-3 border-t border-slate-200 dark:border-slate-700 mt-3">
+            <div className="flex items-center gap-2">
+              <input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+              <Button type="submit" variant="primary" disabled={sending || !draft.trim() || !activeId} className="px-3 py-2 text-sm">
+                <Send size={14} />
+                {sending ? "Sending..." : "Send"}
+              </Button>
+            </div>
+          </form>
+        </Card>
       </section>
     </div>
   );
 }
-
-
