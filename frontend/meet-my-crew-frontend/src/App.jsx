@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import AppLayout from "./layout/AppLayout";
+import Layout from "./components/layout/Layout";
 
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -11,9 +11,6 @@ import StartProject from "./pages/StartProject";
 import MyProjects from "./pages/MyProjects";
 import ProjectDetails from "./pages/ProjectDetails";
 
-// placeholder pages for now
-const Creatives = () => <div className="mmc-pageTitle">Search Results</div>;
-
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -24,13 +21,12 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Everything below shares the SAME sidebar/topbar */}
-      <Route element={<AppLayout />}>
+      <Route element={<Layout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/discover" element={<Discover />} />
-        <Route path="/creatives" element={<Creatives />} />
+        <Route path="/creatives" element={<Discover />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/requests" element={<Requests />} />
         <Route path="/start-project" element={<StartProject />} />

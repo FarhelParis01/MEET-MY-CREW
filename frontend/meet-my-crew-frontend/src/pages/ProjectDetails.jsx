@@ -10,6 +10,8 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -33,18 +35,10 @@ export default function ProjectDetails() {
     try {
       const res = await fetch(
         `http://localhost/meet-my-crew/backend/public/project-messages.php?project_id=${encodeURIComponent(projectId)}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
+        { method: "GET", credentials: "include" }
       );
-
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to load project messages");
-      }
-
+      if (!res.ok) throw new Error(data.error || "Failed to load project messages");
       setMessages(Array.isArray(data) ? data : []);
     } catch (err) {
       setMessages([]);
@@ -55,7 +49,7 @@ export default function ProjectDetails() {
   }
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
     async function loadProjectDetails() {
       setLoading(true);
@@ -64,47 +58,24 @@ export default function ProjectDetails() {
       try {
         const res = await fetch(
           `http://localhost/meet-my-crew/backend/public/project-details.php?id=${encodeURIComponent(id || "")}`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
+          { method: "GET", credentials: "include" }
         );
 
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load project details");
+        if (!mounted) return;
 
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to load project details");
-        }
-
-        if (!isMounted) return;
-
-        const nextProject = data.project || data.project_details || data.details || data;
-
-        const nextMembers = Array.isArray(data.team_members)
-          ? data.team_members
-          : Array.isArray(data.members)
-            ? data.members
-            : [];
-
-        const nextInvites = Array.isArray(data.pending_invitations)
-          ? data.pending_invitations
-          : Array.isArray(data.invitations)
-            ? data.invitations
-            : Array.isArray(data.invites)
-              ? data.invites
-              : [];
-
-        setProject(nextProject);
-        setTeamMembers(nextMembers);
-        setPendingInvitations(nextInvites);
+        setProject(data.project || data.project_details || data.details || data);
+        setTeamMembers(Array.isArray(data.members) ? data.members : []);
+        setPendingInvitations(Array.isArray(data.invites) ? data.invites : []);
       } catch (err) {
-        if (!isMounted) return;
+        if (!mounted) return;
         setProject(null);
         setTeamMembers([]);
         setPendingInvitations([]);
         setError(err.message || "Failed to load project details");
       } finally {
-        if (!isMounted) return;
+        if (!mounted) return;
         setLoading(false);
       }
     }
@@ -120,13 +91,12 @@ export default function ProjectDetails() {
     fetchMessages(id);
 
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, [id]);
 
   async function handleSendMessage(event) {
     event.preventDefault();
-
     const message = newMessage.trim();
     if (!message || !id) return;
 
@@ -138,22 +108,14 @@ export default function ProjectDetails() {
         "http://localhost/meet-my-crew/backend/public/send-project-message.php",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({
-            project_id: Number(id),
-            message,
-          }),
+          body: JSON.stringify({ project_id: Number(id), message }),
         }
       );
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to send message");
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to send message");
 
       setNewMessage("");
       await fetchMessages(id);
@@ -168,197 +130,124 @@ export default function ProjectDetails() {
     if (!project?.deadline) return "No deadline";
     const date = new Date(project.deadline);
     if (Number.isNaN(date.getTime())) return project.deadline;
-    return date.toLocaleDateString([], {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return date.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
   }, [project]);
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          Project Details
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-white/65">
-          View project information, team members, and invitation status.
-        </p>
-      </section>
+      <div>
+        <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Project Details</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Project info, team, invites, and chat.</p>
+      </div>
 
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-          {error}
-        </div>
+        <Card className="p-4 border-red-200 dark:border-red-700">
+          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        </Card>
       ) : null}
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
-          Loading project details...
-        </div>
+        <Card><p className="text-sm text-slate-500 dark:text-slate-400">Loading project details...</p></Card>
       ) : (
         <>
-          <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {project?.title || "Untitled Project"}
-            </h3>
+            </h2>
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{project?.description || "No description"}</p>
 
-            <p className="mt-3 text-sm text-slate-700 dark:text-white/70">
-              {project?.description || "No description"}
-            </p>
-
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700 dark:text-white/70">
-              <div className="flex items-center gap-2">
-                <BriefcaseBusiness className="h-4 w-4 text-[#1f66ff]" />
-                <span>{project?.project_type || "No project type"}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-[#00b3c7]" />
-                <span>{project?.location || "No location"}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-[#1f66ff]" />
-                <span>{formattedDeadline}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Coins className="h-4 w-4 text-[#00b3c7]" />
-                <span>{project?.budget ?? "No budget"}</span>
-              </div>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-2"><BriefcaseBusiness size={14} className="text-blue-600" /> {project?.project_type || "No project type"}</div>
+              <div className="flex items-center gap-2"><MapPin size={14} className="text-teal-500" /> {project?.location || "No location"}</div>
+              <div className="flex items-center gap-2"><CalendarDays size={14} className="text-blue-600" /> {formattedDeadline}</div>
+              <div className="flex items-center gap-2"><Coins size={14} className="text-teal-500" /> {project?.budget ?? "No budget"}</div>
             </div>
-          </section>
+          </Card>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              Team Members
-            </h3>
-
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Team Members</h2>
             {teamMembers.length === 0 ? (
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-white/70">
-                No team members found.
-              </div>
+              <Card><p className="text-sm text-slate-500 dark:text-slate-400">No team members found.</p></Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {teamMembers.map((member) => (
-                  <article
-                    key={member.user_id || member.id || member.email || member.name}
-                    className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
-                  >
-                    <div className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-white/65">
-                      <Users className="h-4 w-4 text-[#1f66ff]" />
-                      Member
+                  <Card key={member.user_id || member.id || member.full_name} className="p-4" as="article">
+                    <div className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <Users size={14} className="text-blue-600" /> Member
                     </div>
-
-                    <h4 className="mt-2 font-semibold text-slate-900 dark:text-slate-100">
-                      {member.full_name || member.name || "Unnamed"}
-                    </h4>
-
-                    <p className="mt-1 text-sm text-slate-700 dark:text-white/70">
-                      {member.role || "No role"}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-700 dark:text-white/70">
-                      {member.city || "Unknown city"}
-                    </p>
-                  </article>
+                    <h3 className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{member.full_name || "Unnamed"}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{member.role || "No role"}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{member.city || "Unknown city"}</p>
+                  </Card>
                 ))}
               </div>
             )}
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              Pending Invitations
-            </h3>
-
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Pending Invitations</h2>
             {pendingInvitations.length === 0 ? (
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 text-sm text-slate-600 dark:text-white/70">
-                No pending invitations.
-              </div>
+              <Card><p className="text-sm text-slate-500 dark:text-slate-400">No pending invitations.</p></Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {pendingInvitations.map((invite) => (
-                  <article
-                    key={invite.id || invite.invite_id || invite.receiver_id}
-                    className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
-                  >
-                    <div className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-white/65">
-                      <UserRoundPlus className="h-4 w-4 text-[#00b3c7]" />
-                      Invitation
+                  <Card key={invite.id || invite.invite_id || invite.receiver_id} className="p-4" as="article">
+                    <div className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <UserRoundPlus size={14} className="text-teal-500" /> Invitation
                     </div>
-
-                    <h4 className="mt-2 font-semibold text-slate-900 dark:text-slate-100">
-                      {invite.full_name || invite.name || "Unknown user"}
-                    </h4>
-
-                    <p className="mt-1 text-sm text-slate-700 dark:text-white/70 capitalize">
-                      {invite.status || "pending"}
-                    </p>
-                  </article>
+                    <h3 className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{invite.full_name || "Unknown user"}</h3>
+                    <p className="text-sm capitalize text-slate-500 dark:text-slate-400">{invite.status || "pending"}</p>
+                  </Card>
                 ))}
               </div>
             )}
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              Project Chat
-            </h3>
-
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4 md:p-5">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Project Chat</h2>
+            <Card>
               {messagesError ? (
-                <div className="mb-3 rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-                  {messagesError}
-                </div>
+                <Card className="p-4 border-red-200 dark:border-red-700">
+                  <p className="text-sm text-red-700 dark:text-red-300">{messagesError}</p>
+                </Card>
               ) : null}
 
-              <div className="max-h-80 overflow-y-auto space-y-3 pr-1">
+              <div className="max-h-80 overflow-y-auto space-y-4">
                 {messagesLoading ? (
-                  <div className="text-sm text-slate-600 dark:text-white/65">Loading messages...</div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Loading messages...</p>
                 ) : messages.length === 0 ? (
-                  <div className="text-sm text-slate-600 dark:text-white/65">No messages yet.</div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No messages yet.</p>
                 ) : (
                   messages.map((msg, index) => (
-                    <div key={`${msg.created_at}-${index}`} className="flex">
-                      <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 px-4 py-3">
-                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/55">
-                          <MessageCircle className="h-3.5 w-3.5" />
-                          <span className="font-semibold text-slate-700 dark:text-white/80">
-                            {msg.sender || "Unknown"}
-                          </span>
-                          <span>•</span>
-                          <span>{msg.created_at || ""}</span>
-                        </div>
-                        <p className="mt-1.5 text-sm text-slate-800 dark:text-white/90">{msg.message}</p>
+                    <Card key={`${msg.created_at}-${index}`} className="p-4" as="article">
+                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                        <MessageCircle size={14} />
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">{msg.sender || "Unknown"}</span>
+                        <span>•</span>
+                        <span>{msg.created_at || ""}</span>
                       </div>
-                    </div>
+                      <p className="mt-2 text-sm text-slate-900 dark:text-slate-100">{msg.message}</p>
+                    </Card>
                   ))
                 )}
               </div>
 
-              <form onSubmit={handleSendMessage} className="mt-4 flex items-center gap-2">
+              <form onSubmit={handleSendMessage} className="mt-6 flex items-center gap-4">
                 <input
                   value={newMessage}
                   onChange={(event) => setNewMessage(event.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 px-4 py-2.5 text-slate-900 dark:text-slate-100 outline-none"
+                  className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
-                <button
-                  type="submit"
-                  disabled={sendingMessage || !newMessage.trim()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <Send className="h-4 w-4" />
+                <Button type="submit" variant="primary" disabled={sendingMessage || !newMessage.trim()}>
+                  <Send size={16} />
                   {sendingMessage ? "Sending..." : "Send"}
-                </button>
+                </Button>
               </form>
-            </div>
+            </Card>
           </section>
         </>
       )}
     </div>
   );
 }
-

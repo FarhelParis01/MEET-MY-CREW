@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { MapPin, Search, UserRound, FolderPlus, X } from "lucide-react";
 import { searchCreatives, sendRequest } from "../api/apiClient";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
 
 const MY_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/my-projects.php";
 const INVITE_USER_URL = "http://localhost/meet-my-crew/backend/public/invite-user.php";
@@ -27,8 +29,7 @@ export default function Discover() {
     searchCreatives(query.trim())
       .then((res) => {
         if (!isMounted) return;
-        const users = Array.isArray(res.users) ? res.users : [];
-        setCreatives(users);
+        setCreatives(Array.isArray(res.users) ? res.users : []);
       })
       .catch((err) => {
         if (!isMounted) return;
@@ -66,24 +67,13 @@ export default function Discover() {
     setProjectsLoading(true);
 
     try {
-      const res = await fetch(MY_PROJECTS_URL, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetch(MY_PROJECTS_URL, { method: "GET", credentials: "include" });
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load your projects");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to load your projects");
-      }
-
-      const created = Array.isArray(data.projects_created)
-        ? data.projects_created
-        : [];
-
+      const created = Array.isArray(data.projects_created) ? data.projects_created : [];
       setProjectsCreated(created);
-      if (created.length > 0) {
-        setSelectedProjectId(String(created[0].id));
-      }
+      if (created.length > 0) setSelectedProjectId(String(created[0].id));
     } catch (err) {
       setProjectsCreated([]);
       setInviteError(err.message || "Failed to load your projects");
@@ -103,9 +93,7 @@ export default function Discover() {
   }
 
   async function handleSendInvitation() {
-    if (!selectedCreative) return;
-
-    if (!selectedProjectId) {
+    if (!selectedCreative || !selectedProjectId) {
       setInviteError("Please select a project.");
       return;
     }
@@ -116,9 +104,7 @@ export default function Discover() {
     try {
       const res = await fetch(INVITE_USER_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           project_id: Number(selectedProjectId),
@@ -128,10 +114,7 @@ export default function Discover() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to send invitation");
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to send invitation");
 
       setNotice("Invitation Sent");
       closeInviteModal();
@@ -145,213 +128,165 @@ export default function Discover() {
   return (
     <>
       <div className="space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5 md:p-6">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                Discover Creatives
-              </h2>
-              <p className="mt-1 text-sm text-slate-600 dark:text-white/65">
-                Search by role or skill to find the right collaborators.
-              </p>
-            </div>
-
-            <div className="w-full sm:w-[360px]">
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/65 dark:bg-white/10 px-3 py-2">
-                <Search className="h-4 w-4 text-[#1f66ff]" />
-                <input
-                  value={query}
-                  onChange={(e) => {
-                    setError("");
-                    setLoading(true);
-                    setQuery(e.target.value);
-                  }}
-                  className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
-                  placeholder="Search role or skill..."
-                />
-              </div>
-            </div>
-          </div>
+        <div>
+          <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Discover Creatives</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Search by role or skill to find collaborators.</p>
         </div>
 
-        {notice && (
-          <div className="rounded-xl border border-emerald-300/40 bg-emerald-100/60 dark:bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
-            {notice}
+        <Card>
+          <div className="flex items-center gap-4">
+            <Search size={16} className="text-slate-500 dark:text-slate-400" />
+            <input
+              value={query}
+              onChange={(e) => {
+                setError("");
+                setLoading(true);
+                setQuery(e.target.value);
+              }}
+              className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              placeholder="Search role or skill..."
+            />
           </div>
-        )}
+        </Card>
 
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-            {error}
-          </div>
-        )}
+        {notice ? (
+          <Card className="p-4 border-emerald-200 dark:border-emerald-700">
+            <p className="text-sm text-emerald-700 dark:text-emerald-300">{notice}</p>
+          </Card>
+        ) : null}
+
+        {error ? (
+          <Card className="p-4 border-red-200 dark:border-red-700">
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          </Card>
+        ) : null}
 
         {loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
-            Loading creatives...
-          </div>
+          <Card><p className="text-sm text-slate-500 dark:text-slate-400">Loading creatives...</p></Card>
         ) : creatives.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-8 text-center text-slate-600 dark:text-white/70">
-            No creatives found for this search.
-          </div>
+          <Card><p className="text-sm text-slate-500 dark:text-slate-400">No creatives found.</p></Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {creatives.map((user) => (
-              <article
-                key={user.user_id}
-                className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-5"
-              >
-                <div className="flex items-center gap-3">
+              <Card key={user.user_id} className="p-4" as="article">
+                <div className="flex items-center gap-4">
                   <img
-                    src={
-                      user.photo ||
-                      `https://i.pravatar.cc/200?u=${encodeURIComponent(user.full_name)}`
-                    }
+                    src={user.photo || `https://i.pravatar.cc/200?u=${encodeURIComponent(user.full_name)}`}
                     alt={user.full_name}
                     className="h-14 w-14 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-                      {user.full_name}
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-white/65">
-                      {user.role}
-                    </p>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{user.full_name}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{user.role}</p>
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 text-sm text-slate-700 dark:text-white/70">
-                  <MapPin className="h-4 w-4 text-[#00b3c7]" />
-                  <span>
-                    {user.city}, {user.region}
-                  </span>
+                <div className="mt-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                  <MapPin size={14} className="text-teal-500" />
+                  <span>{user.city}, {user.region}</span>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-4">
                   {(Array.isArray(user.skills)
                     ? user.skills
-                    : String(user.skills || "")
-                        .split(",")
-                        .map((skill) => skill.trim())
-                        .filter(Boolean)
-                  ).map((skill) => (
+                    : String(user.skills || "").split(",").map((s) => s.trim()).filter(Boolean)
+                  ).slice(0, 4).map((skill) => (
                     <span
                       key={`${user.user_id}-${skill}`}
-                      className="rounded-lg border border-white/10 bg-white/65 dark:bg-white/10 px-2.5 py-1 text-xs text-slate-800 dark:text-white/80"
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                     >
                       {skill}
                     </span>
                   ))}
                 </div>
 
-                <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button className="rounded-xl bg-white/70 hover:bg-white text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white py-2.5 text-sm font-semibold border border-white/10 inline-flex items-center justify-center gap-2">
-                    <UserRound size={15} />
-                    View Profile
-                  </button>
-
-                  <button
-                    onClick={() => handleConnect(user)}
-                    className="rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white py-2.5 text-sm font-semibold shadow-lg shadow-[#1f66ff]/20"
-                  >
-                    Connect
-                  </button>
-
-                  <button
-                    onClick={() => openInviteModal(user)}
-                    className="sm:col-span-2 rounded-xl bg-[#00b3c7] hover:bg-[#0098a8] text-white py-2.5 text-sm font-semibold inline-flex items-center justify-center gap-2"
-                  >
-                    <FolderPlus size={15} />
+                <div className="mt-4 grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button variant="neutral">
+                      <UserRound size={16} />
+                      View Profile
+                    </Button>
+                    <Button variant="primary" onClick={() => handleConnect(user)}>Connect</Button>
+                  </div>
+                  <Button variant="secondary" onClick={() => openInviteModal(user)}>
+                    <FolderPlus size={16} />
                     Invite to Project
-                  </button>
+                  </Button>
                 </div>
-              </article>
+              </Card>
             ))}
           </div>
         )}
       </div>
 
-      {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-100 dark:bg-slate-900 p-5 shadow-2xl">
+      {isInviteModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-6">
+          <Card className="w-full max-w-xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Invite to Project
-              </h3>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Invite to Project</h2>
               <button
                 onClick={closeInviteModal}
-                className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200 dark:text-white/70 dark:hover:bg-white/10"
+                className="rounded-lg border border-slate-200 p-2 text-slate-500 dark:border-slate-700 dark:text-slate-400"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <p className="mt-2 text-sm text-slate-600 dark:text-white/65">
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
               Invite {selectedCreative?.full_name || "this creative"} to one of your projects.
             </p>
 
-            {inviteError && (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-                {inviteError}
+            {inviteError ? (
+              <Card className="mt-4 p-4 border-red-200 dark:border-red-700">
+                <p className="text-sm text-red-700 dark:text-red-300">{inviteError}</p>
+              </Card>
+            ) : null}
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm text-slate-500 dark:text-slate-400">Select Project</label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  disabled={projectsLoading || projectsCreated.length === 0}
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  {projectsLoading ? (
+                    <option value="">Loading projects...</option>
+                  ) : projectsCreated.length === 0 ? (
+                    <option value="">No projects created yet</option>
+                  ) : (
+                    projectsCreated.map((project) => (
+                      <option key={project.id} value={project.id}>{project.title}</option>
+                    ))
+                  )}
+                </select>
               </div>
-            )}
 
-            <div className="mt-4">
-              <label className="mb-2 block text-sm text-slate-700 dark:text-white/70">
-                Select Project
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                disabled={projectsLoading || projectsCreated.length === 0}
-                className="w-full rounded-xl border border-white/10 bg-white dark:bg-white/10 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none"
-              >
-                {projectsLoading ? (
-                  <option value="">Loading projects...</option>
-                ) : projectsCreated.length === 0 ? (
-                  <option value="">No projects created yet</option>
-                ) : (
-                  projectsCreated.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.title}
-                    </option>
-                  ))
-                )}
-              </select>
+              <div>
+                <label className="block text-sm text-slate-500 dark:text-slate-400">Invitation Message</label>
+                <textarea
+                  rows={4}
+                  value={invitationMessage}
+                  onChange={(e) => setInvitationMessage(e.target.value)}
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </div>
             </div>
 
-            <div className="mt-4">
-              <label className="mb-2 block text-sm text-slate-700 dark:text-white/70">
-                Invitation Message
-              </label>
-              <textarea
-                value={invitationMessage}
-                onChange={(e) => setInvitationMessage(e.target.value)}
-                rows={4}
-                className="w-full rounded-xl border border-white/10 bg-white dark:bg-white/10 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none"
-                placeholder="Write a short invitation message"
-              />
-            </div>
-
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <button
-                onClick={closeInviteModal}
-                className="rounded-xl border border-white/10 bg-white/70 hover:bg-white dark:bg-white/10 dark:hover:bg-white/15 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-slate-100"
-              >
-                Cancel
-              </button>
-              <button
+            <div className="mt-6 flex justify-end gap-4">
+              <Button variant="neutral" onClick={closeInviteModal}>Cancel</Button>
+              <Button
+                variant="primary"
                 onClick={handleSendInvitation}
                 disabled={sendingInvite || projectsLoading || projectsCreated.length === 0}
-                className="rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] disabled:opacity-60 disabled:cursor-not-allowed px-4 py-2 text-sm font-semibold text-white"
               >
                 {sendingInvite ? "Sending..." : "Send Invitation"}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
-      )}
+      ) : null}
     </>
   );
 }
-

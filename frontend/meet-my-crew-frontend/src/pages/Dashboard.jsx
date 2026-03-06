@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FolderPlus, Compass, FolderOpen, MessageCircle, Clock3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Clock3, MessageCircle } from "lucide-react";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
 
 const MY_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/my-projects.php";
 const MY_INVITES_URL = "http://localhost/meet-my-crew/backend/public/my-invites.php";
@@ -58,7 +60,6 @@ export default function Dashboard() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to load invites");
     setInvites(asArray(data));
-    return asArray(data);
   }
 
   async function fetchRecentChats(projects) {
@@ -105,55 +106,47 @@ export default function Dashboard() {
     setRecentChats(sorted);
   }
 
-  async function loadDashboard() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const [projectsRes, invitesRes, inboxRes] = await Promise.all([
-        fetch(MY_PROJECTS_URL, { credentials: "include" }),
-        fetch(MY_INVITES_URL, { credentials: "include" }),
-        fetch(MY_INBOX_URL, { credentials: "include" }),
-      ]);
-
-      const projectsData = await projectsRes.json();
-      const invitesData = await invitesRes.json();
-      const inboxData = await inboxRes.json();
-
-      if (!projectsRes.ok) {
-        throw new Error(projectsData.error || "Failed to load projects");
-      }
-      if (!invitesRes.ok) {
-        throw new Error(invitesData.error || "Failed to load invites");
-      }
-      if (!inboxRes.ok) {
-        throw new Error(inboxData.error || "Failed to load inbox");
-      }
-
-      const created = asArray(projectsData.projects_created);
-      const joined = asArray(projectsData.projects_joined);
-      const nextInvites = asArray(invitesData);
-      const nextInbox = asArray(inboxData.messages);
-
-      setCreatedProjects(created);
-      setJoinedProjects(joined);
-      setInvites(nextInvites);
-      setInbox(nextInbox);
-
-      await fetchRecentChats([...created, ...joined]);
-    } catch (err) {
-      setCreatedProjects([]);
-      setJoinedProjects([]);
-      setInvites([]);
-      setInbox([]);
-      setRecentChats([]);
-      setError(err.message || "Failed to load dashboard data");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
+    async function loadDashboard() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const [projectsRes, invitesRes, inboxRes] = await Promise.all([
+          fetch(MY_PROJECTS_URL, { credentials: "include" }),
+          fetch(MY_INVITES_URL, { credentials: "include" }),
+          fetch(MY_INBOX_URL, { credentials: "include" }),
+        ]);
+
+        const projectsData = await projectsRes.json();
+        const invitesData = await invitesRes.json();
+        const inboxData = await inboxRes.json();
+
+        if (!projectsRes.ok) throw new Error(projectsData.error || "Failed to load projects");
+        if (!invitesRes.ok) throw new Error(invitesData.error || "Failed to load invites");
+        if (!inboxRes.ok) throw new Error(inboxData.error || "Failed to load inbox");
+
+        const created = asArray(projectsData.projects_created);
+        const joined = asArray(projectsData.projects_joined);
+
+        setCreatedProjects(created);
+        setJoinedProjects(joined);
+        setInvites(asArray(invitesData));
+        setInbox(asArray(inboxData.messages));
+
+        await fetchRecentChats([...created, ...joined]);
+      } catch (err) {
+        setCreatedProjects([]);
+        setJoinedProjects([]);
+        setInvites([]);
+        setInbox([]);
+        setRecentChats([]);
+        setError(err.message || "Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     loadDashboard();
   }, []);
 
@@ -192,148 +185,110 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Dashboard</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Overview of your projects and activity.</p>
+      </div>
+
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-          {error}
-        </div>
+        <Card className="p-4 border-red-200 dark:border-red-800">
+          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        </Card>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Dashboard</h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-white/65">Overview of your projects and activity.</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {[
+          ["Created Projects", stats.created_projects_count],
+          ["Joined Projects", stats.joined_projects_count],
+          ["Pending Invites", stats.pending_invites_count],
+          ["Unread Messages", stats.unread_messages_count],
+        ].map(([label, value]) => (
+          <Card key={label} className="p-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
+          </Card>
+        ))}
+      </div>
 
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4">
-            <div className="text-sm text-slate-600 dark:text-white/65">Created Projects</div>
-            <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.created_projects_count}</div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4">
-            <div className="text-sm text-slate-600 dark:text-white/65">Joined Projects</div>
-            <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.joined_projects_count}</div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4">
-            <div className="text-sm text-slate-600 dark:text-white/65">Pending Invites</div>
-            <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.pending_invites_count}</div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4">
-            <div className="text-sm text-slate-600 dark:text-white/65">Unread Messages</div>
-            <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.unread_messages_count}</div>
-          </div>
+      <Card>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Quick Actions</h2>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Button variant="primary" onClick={() => navigate("/start-project")}>Start Project</Button>
+          <Button variant="secondary" onClick={() => navigate("/discover")}>Discover Creatives</Button>
+          <Button variant="neutral" onClick={() => navigate("/my-projects")}>My Projects</Button>
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Quick Actions</h3>
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Link
-            to="/start-project"
-            className="rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white px-4 py-3 font-semibold inline-flex items-center justify-center gap-2"
-          >
-            <FolderPlus className="h-4 w-4" />
-            Start Project
-          </Link>
-
-          <Link
-            to="/discover"
-            className="rounded-xl bg-white/70 hover:bg-white text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white px-4 py-3 font-semibold border border-white/10 inline-flex items-center justify-center gap-2"
-          >
-            <Compass className="h-4 w-4" />
-            Discover Creatives
-          </Link>
-
-          <Link
-            to="/my-projects"
-            className="rounded-xl bg-white/70 hover:bg-white text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white px-4 py-3 font-semibold border border-white/10 inline-flex items-center justify-center gap-2"
-          >
-            <FolderOpen className="h-4 w-4" />
-            My Projects
-          </Link>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Pending Invitations</h3>
-
+      <Card>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Pending Invitations</h2>
         {loading ? (
-          <div className="mt-4 text-sm text-slate-600 dark:text-white/65">Loading invitations...</div>
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading invitations...</p>
         ) : invites.length === 0 ? (
-          <div className="mt-4 text-sm text-slate-600 dark:text-white/65">No pending invitations.</div>
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">No pending invitations.</p>
         ) : (
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-4">
             {invites.slice(0, 3).map((invite) => {
               const inviteId = inviteIdOf(invite);
               return (
-                <div
-                  key={inviteId}
-                  className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4 flex items-center justify-between gap-3"
-                >
-                  <div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">{invite.title || "Project Invitation"}</div>
-                    <div className="text-sm text-slate-600 dark:text-white/65">{invite.message || "You were invited to a project."}</div>
+                <Card key={inviteId} className="p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{invite.title || "Project Invitation"}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{invite.message || "You were invited to a project."}</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <Button
+                        variant="primary"
+                        disabled={inviteActionLoadingId === inviteId}
+                        onClick={() => respondInvite(inviteId, "accept")}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        variant="neutral"
+                        disabled={inviteActionLoadingId === inviteId}
+                        onClick={() => respondInvite(inviteId, "reject")}
+                      >
+                        Reject
+                      </Button>
+                    </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      disabled={inviteActionLoadingId === inviteId}
-                      onClick={() => respondInvite(inviteId, "accept")}
-                      className="rounded-xl bg-[#1f66ff] hover:bg-[#1b59db] text-white px-3 py-2 text-sm font-semibold disabled:opacity-60"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      disabled={inviteActionLoadingId === inviteId}
-                      onClick={() => respondInvite(inviteId, "reject")}
-                      className="rounded-xl bg-white/70 hover:bg-white text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white px-3 py-2 text-sm font-semibold border border-white/10 disabled:opacity-60"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
+                </Card>
               );
             })}
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Project Chats</h3>
-
+      <Card>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Project Chats</h2>
         {loading ? (
-          <div className="mt-4 text-sm text-slate-600 dark:text-white/65">Loading project chats...</div>
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading project chats...</p>
         ) : recentChats.length === 0 ? (
-          <div className="mt-4 text-sm text-slate-600 dark:text-white/65">No project chats yet.</div>
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">No project chats yet.</p>
         ) : (
-          <div className="mt-4 space-y-3">
-            {recentChats.slice(0, 3).map((chat) => (
-              <div
-                key={chat.project_id}
-                className="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-4 flex items-center justify-between gap-3"
-              >
-                <div>
-                  <div className="font-semibold text-slate-900 dark:text-slate-100">{chat.title}</div>
-                  <div className="text-sm text-slate-600 dark:text-white/65 line-clamp-1">{chat.last_message}</div>
-                  <div className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500 dark:text-white/55">
-                    <Clock3 className="h-3.5 w-3.5" />
-                    {formatWhen(chat.created_at)}
+          <div className="mt-4 space-y-4">
+            {recentChats.map((chat) => (
+              <Card key={chat.project_id} className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{chat.title}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{chat.last_message}</p>
+                    <div className="mt-2 inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <Clock3 size={14} />
+                      {formatWhen(chat.created_at)}
+                    </div>
                   </div>
+                  <Button variant="neutral" onClick={() => navigate(`/project/${chat.project_id}`)}>
+                    <MessageCircle size={16} />
+                    Open
+                  </Button>
                 </div>
-
-                <button
-                  onClick={() => navigate(`/project/${chat.project_id}`)}
-                  className="rounded-xl bg-white/70 hover:bg-white text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white px-3 py-2 text-sm font-semibold border border-white/10 inline-flex items-center gap-2"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Open
-                </button>
-              </div>
+              </Card>
             ))}
           </div>
         )}
-      </section>
+      </Card>
     </div>
   );
 }
-

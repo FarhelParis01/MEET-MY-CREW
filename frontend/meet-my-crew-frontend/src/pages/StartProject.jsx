@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FolderPlus } from "lucide-react";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
 
 const INITIAL_FORM = {
   title: "",
@@ -40,31 +42,17 @@ export default function StartProject() {
         "http://localhost/meet-my-crew/backend/public/create-project.php",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({
-            title: form.title,
-            description: form.description,
-            project_type: form.project_type,
-            location: form.location,
-            deadline: form.deadline,
-            budget: form.budget,
-          }),
+          body: JSON.stringify(form),
         }
       );
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create project");
-      }
+      if (!response.ok) throw new Error(data.error || "Failed to create project");
 
       setSuccess("Project created successfully.");
-      setTimeout(() => {
-        navigate("/");
-      }, 900);
+      setTimeout(() => navigate("/dashboard"), 900);
     } catch (err) {
       setError(err.message || "Failed to create project");
     } finally {
@@ -73,100 +61,81 @@ export default function StartProject() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700 p-6 md:p-8">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-slate-100">
-              Start a New Project
-            </h2>
-            <p className="mt-1 text-slate-600 dark:text-white/65">
-              Create a project and invite collaborators.
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Start Project</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Create a new project and invite collaborators.</p>
+      </div>
 
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/60 px-3 py-2 text-sm text-slate-800 hover:bg-white dark:bg-white/10 dark:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Dashboard
-          </button>
+      <Card>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Project Information</h2>
+          <Button variant="neutral" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft size={16} />
+            Back
+          </Button>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-5">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white/75">
-              Title
-            </label>
-            <input
-              name="title"
-              value={form.title}
-              onChange={onChange}
-              placeholder="Enter project title"
-              className="w-full rounded-xl border border-white/10 bg-white/65 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-500 focus:border-[#1f66ff] focus:ring-2 focus:ring-[#1f66ff]/30 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white/75">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={onChange}
-              rows={4}
-              placeholder="Describe your project goals and what you need"
-              className="w-full rounded-xl border border-white/10 bg-white/65 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-500 focus:border-[#1f66ff] focus:ring-2 focus:ring-[#1f66ff]/30 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40"
-            />
-          </div>
-
+        <form onSubmit={onSubmit} className="mt-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white/75">
-                Project Type
-              </label>
+              <label className="block text-sm text-slate-500 dark:text-slate-400">Title</label>
+              <input
+                name="title"
+                value={form.title}
+                onChange={onChange}
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                placeholder="Enter project title"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-slate-500 dark:text-slate-400">Project Type</label>
               <input
                 name="project_type"
                 value={form.project_type}
                 onChange={onChange}
-                placeholder="Film, Ad, Music Video..."
-                className="w-full rounded-xl border border-white/10 bg-white/65 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-500 focus:border-[#1f66ff] focus:ring-2 focus:ring-[#1f66ff]/30 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40"
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                placeholder="Film, Ad, Music Video"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white/75">
-                Location
-              </label>
+              <label className="block text-sm text-slate-500 dark:text-slate-400">Location</label>
               <input
                 name="location"
                 value={form.location}
                 onChange={onChange}
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 placeholder="City, Region"
-                className="w-full rounded-xl border border-white/10 bg-white/65 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-500 focus:border-[#1f66ff] focus:ring-2 focus:ring-[#1f66ff]/30 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white/75">
-                Deadline
-              </label>
+              <label className="block text-sm text-slate-500 dark:text-slate-400">Deadline</label>
               <input
                 type="date"
                 name="deadline"
                 value={form.deadline}
                 onChange={onChange}
-                className="w-full rounded-xl border border-white/10 bg-white/65 px-4 py-3 text-slate-900 outline-none focus:border-[#1f66ff] focus:ring-2 focus:ring-[#1f66ff]/30 dark:bg-white/10 dark:text-white"
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm text-slate-500 dark:text-slate-400">Description</label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={onChange}
+                rows={4}
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                placeholder="Describe your project"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white/75">
-                Budget
-              </label>
+              <label className="block text-sm text-slate-500 dark:text-slate-400">Budget</label>
               <input
                 type="number"
                 min="0"
@@ -174,35 +143,30 @@ export default function StartProject() {
                 name="budget"
                 value={form.budget}
                 onChange={onChange}
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 placeholder="0.00"
-                className="w-full rounded-xl border border-white/10 bg-white/65 px-4 py-3 text-slate-900 outline-none placeholder:text-slate-500 focus:border-[#1f66ff] focus:ring-2 focus:ring-[#1f66ff]/30 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40"
               />
             </div>
           </div>
 
           {error ? (
-            <div className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-200">
-              {error}
-            </div>
+            <Card className="p-4 border-red-200 dark:border-red-700">
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            </Card>
           ) : null}
 
           {success ? (
-            <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">
-              {success}
-            </div>
+            <Card className="p-4 border-emerald-200 dark:border-emerald-700">
+              <p className="text-sm text-emerald-700 dark:text-emerald-300">{success}</p>
+            </Card>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1f66ff] px-5 py-3 font-semibold text-white hover:bg-[#1b59db] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <FolderPlus className="h-4 w-4" />
+          <Button type="submit" variant="primary" disabled={submitting}>
+            <FolderPlus size={16} />
             {submitting ? "Creating..." : "Create Project"}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }
-
