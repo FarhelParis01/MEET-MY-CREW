@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BriefcaseBusiness, CalendarDays, Inbox, MapPin } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Inbox, MapPin, Users } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
@@ -29,28 +29,58 @@ function formatDeadline(deadline) {
   return date.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
 }
 
-function ProjectItem({ project, onClick }) {
+function getProjectId(project) {
+  return project.id || project.project_id;
+}
+
+function getTeamCount(project) {
+  const value =
+    project.team_member_count ??
+    project.members_count ??
+    project.team_count ??
+    project.member_count ??
+    0;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function ProjectCard({ project, mode, onOpen, onInvite }) {
+  const title = project.title || "Untitled Project";
+  const projectType = project.project_type || "No type";
+  const location = project.location || "No location";
+  const deadline = formatDeadline(project.deadline);
+  const teamCount = getTeamCount(project);
+
   return (
-    <Card className="p-4 cursor-pointer" as="article">
-      <button onClick={onClick} className="w-full text-left">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          {project.title || "Untitled Project"}
-        </h3>
-        <div className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <BriefcaseBusiness size={14} className="text-blue-600" />
-            <span>{project.project_type || "No type"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin size={14} className="text-teal-500" />
-            <span>{project.location || "No location"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CalendarDays size={14} className="text-blue-600" />
-            <span>{formatDeadline(project.deadline)}</span>
-          </div>
+    <Card className="p-4" as="article">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+
+      <div className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-2">
+          <BriefcaseBusiness size={14} className="text-blue-600" />
+          <span>{projectType}</span>
         </div>
-      </button>
+        <div className="flex items-center gap-2">
+          <MapPin size={14} className="text-teal-500" />
+          <span>{location}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <CalendarDays size={14} className="text-blue-600" />
+          <span>{deadline}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Users size={14} className="text-teal-500" />
+          <span>{teamCount} team member{teamCount === 1 ? "" : "s"}</span>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button variant="primary" onClick={onOpen}>Open Project</Button>
+        {mode === "created" ? (
+          <Button variant="secondary" onClick={onInvite}>Invite Collaborator</Button>
+        ) : null}
+      </div>
     </Card>
   );
 }
@@ -60,6 +90,7 @@ export default function MyProjects() {
   const [projectsCreated, setProjectsCreated] = useState([]);
   const [projectsJoined, setProjectsJoined] = useState([]);
   const [invites, setInvites] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -92,6 +123,7 @@ export default function MyProjects() {
         if (!invitesRes.ok) throw new Error(invitesData.error || "Failed to load invitations");
 
         if (!mounted) return;
+
         const normalized = normalizeProjects(projectsData);
         setProjectsCreated(normalized.projectsCreated);
         setProjectsJoined(normalized.projectsJoined);
@@ -139,16 +171,27 @@ export default function MyProjects() {
     }
   }
 
-  function goToProject(project) {
-    const projectId = project.id || project.project_id;
+  function openProject(project) {
+    const projectId = getProjectId(project);
     if (projectId) navigate(`/project/${projectId}`);
+  }
+
+  function inviteToProject(project) {
+    const projectId = getProjectId(project);
+    if (projectId) navigate(`/discover?project_id=${encodeURIComponent(projectId)}`);
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">My Projects</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Projects you created, joined, and pending invites.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">My Projects</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            View your created projects, joined projects, and pending invitations.
+          </p>
+        </div>
+
+        <Button variant="primary" onClick={() => navigate("/start-project")}>Create New Project</Button>
       </div>
 
       {notice ? (
@@ -178,10 +221,12 @@ export default function MyProjects() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {projectsCreated.map((project) => (
-                  <ProjectItem
-                    key={project.id || project.project_id || project.title}
+                  <ProjectCard
+                    key={getProjectId(project) || project.title}
                     project={project}
-                    onClick={() => goToProject(project)}
+                    mode="created"
+                    onOpen={() => openProject(project)}
+                    onInvite={() => inviteToProject(project)}
                   />
                 ))}
               </div>
@@ -197,10 +242,11 @@ export default function MyProjects() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {projectsJoined.map((project) => (
-                  <ProjectItem
-                    key={project.id || project.project_id || project.title}
+                  <ProjectCard
+                    key={getProjectId(project) || project.title}
                     project={project}
-                    onClick={() => goToProject(project)}
+                    mode="joined"
+                    onOpen={() => openProject(project)}
                   />
                 ))}
               </div>
@@ -214,22 +260,22 @@ export default function MyProjects() {
                 <p className="text-sm text-slate-500 dark:text-slate-400">No pending invitations.</p>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {invites.map((invite) => {
                   const inviteId = invite.id || invite.invite_id;
+                  const title = invite.title || invite.project_title || "Project Invitation";
                   return (
                     <Card key={inviteId} className="p-4" as="article">
                       <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                         <Inbox size={14} className="text-teal-500" />
                         Pending invitation
                       </div>
-                      <h3 className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                        {invite.title || invite.project_title || "Project Invitation"}
-                      </h3>
+                      <h3 className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
                       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                         {invite.message || "You have been invited to collaborate on this project."}
                       </p>
-                      <div className="mt-4 flex gap-4">
+
+                      <div className="mt-4 flex gap-2">
                         <Button
                           variant="primary"
                           disabled={actingInviteId === inviteId}

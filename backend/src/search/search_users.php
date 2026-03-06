@@ -4,15 +4,27 @@ header("Content-Type: application/json");
 require_once __DIR__ . "/../middleware/require_login.php";
 require_once __DIR__ . "/../config/database.php";
 
-// Read query parameters (from URL)
-$role = trim($_GET["role"] ?? "");
-$city = trim($_GET["city"] ?? "");
-$name = trim($_GET["name"] ?? "");
-$availability = trim($_GET["availability"] ?? ""); // available / busy / empty
+$rawInput = file_get_contents("php://input");
+$jsonInput = json_decode($rawInput, true);
+if (!is_array($jsonInput)) {
+  $jsonInput = [];
+}
 
-// Build base query
+function read_filter($key, $jsonInput) {
+  if (isset($_GET[$key])) return trim((string) $_GET[$key]);
+  if (isset($_POST[$key])) return trim((string) $_POST[$key]);
+  if (isset($jsonInput[$key])) return trim((string) $jsonInput[$key]);
+  return "";
+}
+
+$role = read_filter("role", $jsonInput);
+$region = read_filter("region", $jsonInput);
+$city = read_filter("city", $jsonInput);
+$name = read_filter("name", $jsonInput);
+$availability = read_filter("availability", $jsonInput); // available / busy / empty
+
 $sql = "
-  SELECT 
+  SELECT
     u.user_id,
     u.full_name,
     u.email,
@@ -28,41 +40,47 @@ $sql = "
   WHERE u.status = 'active' AND u.account_type = 'user'
 ";
 
-// We'll add filters only if provided
 $params = [];
 $types = "";
 
-// Filter by role
 if ($role !== "") {
   $sql .= " AND u.role = ? ";
   $params[] = $role;
   $types .= "s";
 }
 
-// Filter by city
+if ($region !== "") {
+  $sql .= " AND u.region = ? ";
+  $params[] = $region;
+  $types .= "s";
+}
+
 if ($city !== "") {
   $sql .= " AND u.city = ? ";
   $params[] = $city;
   $types .= "s";
 }
 
-// Filter by availability (from profiles table)
 if ($availability === "available" || $availability === "busy") {
   $sql .= " AND p.availability = ? ";
   $params[] = $availability;
   $types .= "s";
 }
 
-// Search by name (partial match)
 if ($name !== "") {
   $sql .= " AND u.full_name LIKE ? ";
   $params[] = "%" . $name . "%";
   $types .= "s";
 }
 
-$sql .= " ORDER BY u.full_name ASC LIMIT 50 ";
+$sql .= " ORDER BY u.full_name ASC LIMIT 100 ";
 
 $stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+  echo json_encode(["error" => "Failed to prepare search query"]);
+  exit;
+}
 
 if ($types !== "") {
   $stmt->bind_param($types, ...$params);
@@ -81,6 +99,7 @@ echo json_encode([
   "count" => count($users),
   "filters" => [
     "role" => $role,
+    "region" => $region,
     "city" => $city,
     "availability" => $availability,
     "name" => $name
