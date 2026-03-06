@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { apiRequest } from "../services/api";
 
+function isAdminUser(payload) {
+  const accountType = String(payload?.user?.account_type || "").toLowerCase();
+  const role = String(payload?.user?.role || "").toLowerCase();
+  return accountType === "admin" || role === "admin";
+}
+
 export default function AdminRoute({ children }) {
   const location = useLocation();
   const [status, setStatus] = useState("loading");
@@ -12,10 +18,8 @@ export default function AdminRoute({ children }) {
     async function checkAccess() {
       try {
         const data = await apiRequest("/my-profile.php");
-        const accountType = data?.user?.account_type || "";
-
         if (!mounted) return;
-        setStatus(accountType === "admin" ? "allowed" : "denied");
+        setStatus(isAdminUser(data) ? "allowed" : "denied");
       } catch {
         if (!mounted) return;
         setStatus("denied");

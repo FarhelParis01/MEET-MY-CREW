@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
@@ -12,34 +12,14 @@ import {
   LogOut,
   Moon,
   Sun,
+  Shield,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { apiRequest } from "../../services/api";
 
-const navSections = [
-  {
-    title: "Projects",
-    items: [
-      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/my-projects", label: "My Projects", icon: Folder },
-      { to: "/start-project", label: "Start Project", icon: FolderPlus },
-    ],
-  },
-  {
-    title: "Network",
-    items: [
-      { to: "/discover", label: "Discover Creatives", icon: Compass },
-      { to: "/messages", label: "Messages", icon: MessageSquare },
-    ],
-  },
-  {
-    title: "Account",
-    items: [{ to: "/profile", label: "Profile", icon: User }],
-  },
-];
-
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
@@ -47,6 +27,63 @@ export default function Layout() {
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCurrentUser() {
+      try {
+        const data = await apiRequest("/my-profile.php");
+        if (!mounted) return;
+
+        const accountType = String(data?.user?.account_type || "").toLowerCase();
+        const role = String(data?.user?.role || "").toLowerCase();
+        setIsAdmin(accountType === "admin" || role === "admin");
+      } catch {
+        if (!mounted) return;
+        setIsAdmin(false);
+      }
+    }
+
+    loadCurrentUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const navSections = useMemo(() => {
+    const base = [
+      {
+        title: "Projects",
+        items: [
+          { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+          { to: "/my-projects", label: "My Projects", icon: Folder },
+          { to: "/start-project", label: "Start Project", icon: FolderPlus },
+        ],
+      },
+      {
+        title: "Network",
+        items: [
+          { to: "/discover", label: "Discover Creatives", icon: Compass },
+          { to: "/messages", label: "Messages", icon: MessageSquare },
+        ],
+      },
+      {
+        title: "Account",
+        items: [{ to: "/profile", label: "Profile", icon: User }],
+      },
+    ];
+
+    if (isAdmin) {
+      base.splice(2, 0, {
+        title: "Admin",
+        items: [{ to: "/admin", label: "Admin Panel", icon: Shield }],
+      });
+    }
+
+    return base;
+  }, [isAdmin]);
 
   async function logout() {
     try {
