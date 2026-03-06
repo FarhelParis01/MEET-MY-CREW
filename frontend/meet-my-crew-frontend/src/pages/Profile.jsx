@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { MapPin, Mail, Edit3 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { MapPin, Mail, Edit3, MessageSquare, FolderPlus } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
 const DEFAULT_USER = {
+  user_id: null,
   full_name: "User",
   role: "Creative",
   city: "",
@@ -15,6 +16,9 @@ const DEFAULT_USER = {
   photo: "",
 };
 
+const MY_PROFILE_URL = "http://localhost/meet-my-crew/backend/public/my-profile.php";
+const SEARCH_URL = "http://localhost/meet-my-crew/backend/public/search.php";
+
 function parseSkills(skills) {
   if (Array.isArray(skills)) return skills;
   if (typeof skills === "string") {
@@ -23,27 +27,96 @@ function parseSkills(skills) {
   return [];
 }
 
+function parseId(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function parseJsonSafe(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function normalizeUserRecord(record) {
+  return {
+    ...DEFAULT_USER,
+    ...(record || {}),
+  };
+}
+
 export default function Profile() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [user, setUser] = useState(DEFAULT_USER);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const profileUserId = parseId(searchParams.get("user_id"));
+
   useEffect(() => {
-    fetch("http://localhost/meet-my-crew/backend/public/my-profile.php", {
-      credentials: "include",
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to load profile");
-        setUser({
-          ...DEFAULT_USER,
-          ...(data.user || {}),
-          ...(data.profile || {}),
+    let mounted = true;
+
+    async function loadProfile() {
+      setLoading(true);
+
+      try {
+        const myRes = await fetch(MY_PROFILE_URL, { credentials: "include" });
+        const myData = await parseJsonSafe(myRes);
+        if (!myRes.ok) throw new Error(myData?.error || "Failed to load profile");
+
+        const myUser = normalizeUserRecord({
+          ...(myData?.user || {}),
+          ...(myData?.profile || {}),
         });
-      })
-      .catch(() => setUser(DEFAULT_USER))
-      .finally(() => setLoading(false));
-  }, []);
+
+        const myId = parseId(myUser.user_id);
+        if (!mounted) return;
+        setCurrentUserId(myId);
+
+        if (!profileUserId || (myId && profileUserId === myId)) {
+          setUser(myUser);
+          return;
+        }
+
+        const searchRes = await fetch(SEARCH_URL, { credentials: "include" });
+        const searchData = await parseJsonSafe(searchRes);
+        if (!searchRes.ok) throw new Error(searchData?.error || "Failed to load user directory");
+
+        const users = Array.isArray(searchData?.users) ? searchData.users : [];
+        const target = users.find((u) => parseId(u.user_id) === profileUserId);
+
+        if (!mounted) return;
+        if (target) {
+          setUser(normalizeUserRecord(target));
+        } else {
+          setUser(myUser);
+        }
+      } catch {
+        if (!mounted) return;
+        setUser(DEFAULT_USER);
+        setCurrentUserId(null);
+      } finally {
+        if (!mounted) return;
+        setLoading(false);
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, [profileUserId]);
+
+  const isOwnProfile = useMemo(() => {
+    const viewedId = parseId(user.user_id);
+    if (!viewedId || !currentUserId) return true;
+    return viewedId === currentUserId;
+  }, [user.user_id, currentUserId]);
 
   const skills = useMemo(() => {
     const parsed = parseSkills(user.skills);
@@ -54,7 +127,7 @@ export default function Profile() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Profile</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Your professional profile and public details.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Professional profile and public details.</p>
       </div>
 
       {loading ? (
@@ -82,10 +155,29 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  <Button variant="primary" onClick={() => navigate("/profile/edit")}>
-                    <Edit3 size={16} />
-                    Edit Profile
-                  </Button>
+                  {isOwnProfile ? (
+                    <Button variant="primary" onClick={() => navigate("/profile/edit")}>
+                      <Edit3 size={16} />
+                      Edit Profile
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        onClick={() => navigate(`/discover?invite_user_id=${encodeURIComponent(user.user_id || "")}`)}
+                      >
+                        <FolderPlus size={16} />
+                        Invite to Project
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => navigate(`/messages?user_id=${encodeURIComponent(user.user_id || "")}`)}
+                      >
+                        <MessageSquare size={16} />
+                        Chat
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">

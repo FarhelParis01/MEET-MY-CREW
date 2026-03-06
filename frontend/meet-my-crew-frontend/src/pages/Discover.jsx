@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { MapPin, UserRound, FolderPlus, X, Search } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import CreativeProfileModal from "../components/CreativeProfileModal";
 
 const SEARCH_URL = "http://localhost/meet-my-crew/backend/public/search.php";
 const MY_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/my-projects.php";
-const INVITE_TO_PROJECT_URL = "http://localhost/meet-my-crew/backend/public/invite-to-project.php";
-const INVITE_USER_FALLBACK_URL = "http://localhost/meet-my-crew/backend/public/invite-user.php";
+const INVITE_USER_URL = "http://localhost/meet-my-crew/backend/public/invite-user.php";
 
 const ROLE_OPTIONS = ["All", "Director", "Producer", "Editor", "Actor", "Cinematographer", "Sound Designer", "Creative"];
 const REGION_OPTIONS = ["All", "Centre", "Littoral", "West", "North West", "South West", "North", "South", "East", "Adamawa"];
@@ -136,6 +136,11 @@ export default function Discover() {
     }
   }
 
+  function openInviteFromProfile(user) {
+    closeProfileModal();
+    openInviteModal(user);
+  }
+
   function closeInviteModal() {
     setIsInviteModalOpen(false);
     setSelectedCreative(null);
@@ -144,26 +149,6 @@ export default function Discover() {
     setInvitationMessage("Hi, I would like to collaborate with you.");
     setInviteError("");
     setSendingInvite(false);
-  }
-
-  async function sendInviteRequest(url) {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        project_id: Number(selectedProjectId),
-        receiver_id: selectedCreative?.user_id,
-        message: invitationMessage,
-      }),
-    });
-
-    const data = await parseJsonSafe(response);
-    if (!response.ok) {
-      throw new Error(data?.error || "Failed to send invitation");
-    }
-
-    return data;
   }
 
   async function handleSendInvitation() {
@@ -176,17 +161,26 @@ export default function Discover() {
     setSendingInvite(true);
 
     try {
-      await sendInviteRequest(INVITE_TO_PROJECT_URL);
+      const response = await fetch(INVITE_USER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          project_id: Number(selectedProjectId),
+          receiver_id: selectedCreative?.user_id,
+          message: invitationMessage,
+        }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to send invitation");
+      }
+
       setNotice("Invitation sent.");
       closeInviteModal();
-    } catch (primaryErr) {
-      try {
-        await sendInviteRequest(INVITE_USER_FALLBACK_URL);
-        setNotice("Invitation sent.");
-        closeInviteModal();
-      } catch (fallbackErr) {
-        setInviteError(fallbackErr.message || primaryErr.message || "Failed to send invitation");
-      }
+    } catch (err) {
+      setInviteError(err.message || "Failed to send invitation");
     } finally {
       setSendingInvite(false);
     }
@@ -330,44 +324,12 @@ export default function Discover() {
         )}
       </div>
 
-      {isProfileModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
-          <Card className="w-full max-w-md p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Creative Profile</h2>
-              <button
-                onClick={closeProfileModal}
-                className="rounded-lg border border-slate-200 p-2 text-slate-500 dark:border-slate-700 dark:text-slate-400"
-                aria-label="Close profile modal"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="mt-4 flex items-center gap-3">
-              <img
-                src={profileCreative?.photo || profileCreative?.profile_image || `https://i.pravatar.cc/200?u=${encodeURIComponent(profileCreative?.full_name || "creative")}`}
-                alt={profileCreative?.full_name || "Creative"}
-                className="h-12 w-12 rounded-full object-cover"
-              />
-              <div>
-                <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{profileCreative?.full_name || "Unknown creative"}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{profileCreative?.role || "Creative"}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <p><span className="font-medium text-slate-800 dark:text-slate-200">Location:</span> {profileCreative?.city || "Unknown city"}, {profileCreative?.region || "Unknown region"}</p>
-              <p><span className="font-medium text-slate-800 dark:text-slate-200">Bio:</span> {profileCreative?.bio || "No bio provided."}</p>
-              <p><span className="font-medium text-slate-800 dark:text-slate-200">Skills:</span> {profileCreative?.skills || "No skills listed."}</p>
-            </div>
-
-            <div className="mt-5 flex justify-end">
-              <Button variant="neutral" className="px-3 py-1.5 text-sm" onClick={closeProfileModal}>Close</Button>
-            </div>
-          </Card>
-        </div>
-      ) : null}
+      <CreativeProfileModal
+        open={isProfileModalOpen}
+        creative={profileCreative}
+        onClose={closeProfileModal}
+        onInvite={openInviteFromProfile}
+      />
 
       {isInviteModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
