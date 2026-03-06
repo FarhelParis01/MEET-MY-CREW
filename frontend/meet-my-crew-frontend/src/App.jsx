@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/layout/Layout";
+import AdminLayout from "./components/layout/AdminLayout";
+import AdminRoute from "./components/AdminRoute";
 
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -11,6 +13,10 @@ import StartProject from "./pages/StartProject";
 import MyProjects from "./pages/MyProjects";
 import ProjectDetails from "./pages/ProjectDetails";
 import CreativeProfilePage from "./pages/CreativeProfilePage";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminProjects from "./pages/AdminProjects";
+import AdminPortfolio from "./pages/AdminPortfolio";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -34,6 +40,20 @@ export default function App() {
         <Route path="/my-projects" element={<MyProjects />} />
         <Route path="/project/:id" element={<ProjectDetails />} />
         <Route path="/creative/:id" element={<CreativeProfilePage />} />
+      </Route>
+
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminLayout />
+          </AdminRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="projects" element={<AdminProjects />} />
+        <Route path="portfolio" element={<AdminPortfolio />} />
       </Route>
     </Routes>
   );
