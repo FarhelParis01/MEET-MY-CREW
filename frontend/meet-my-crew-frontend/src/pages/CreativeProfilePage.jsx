@@ -6,6 +6,7 @@ import Button from "../components/ui/Button";
 
 const SEARCH_URL = "http://localhost/meet-my-crew/backend/public/search.php";
 const GET_USER_PORTFOLIO_URL = "http://localhost/meet-my-crew/backend/public/get-user-portfolio.php";
+const GET_USER_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/get-user-projects.php";
 
 const DEFAULT_USER = {
   user_id: null,
@@ -16,7 +17,6 @@ const DEFAULT_USER = {
   bio: "",
   skills: "",
   photo: "",
-  past_projects: [],
 };
 
 function parseId(value) {
@@ -33,6 +33,10 @@ function parseList(value) {
       .filter(Boolean);
   }
   return [];
+}
+
+function getProjectId(project) {
+  return project?.id || project?.project_id || null;
 }
 
 function normalizeUser(user) {
@@ -56,6 +60,7 @@ export default function CreativeProfilePage() {
 
   const [creative, setCreative] = useState(DEFAULT_USER);
   const [portfolio, setPortfolio] = useState([]);
+  const [pastProjects, setPastProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -69,19 +74,24 @@ export default function CreativeProfilePage() {
       setError("");
 
       try {
-        const [creativeResponse, portfolioResponse] = await Promise.all([
+        const [creativeResponse, portfolioResponse, projectsResponse] = await Promise.all([
           fetch(SEARCH_URL, { credentials: "include" }),
           fetch(`${GET_USER_PORTFOLIO_URL}?user_id=${encodeURIComponent(creativeId || "")}`, { credentials: "include" }),
+          fetch(`${GET_USER_PROJECTS_URL}?user_id=${encodeURIComponent(creativeId || "")}`, { credentials: "include" }),
         ]);
 
         const creativeData = await parseJsonSafe(creativeResponse);
         const portfolioData = await parseJsonSafe(portfolioResponse);
+        const projectsData = await parseJsonSafe(projectsResponse);
 
         if (!creativeResponse.ok) {
           throw new Error(creativeData?.error || "Failed to load creative profiles");
         }
         if (!portfolioResponse.ok) {
           throw new Error(portfolioData?.error || "Failed to load portfolio");
+        }
+        if (!projectsResponse.ok) {
+          throw new Error(projectsData?.error || "Failed to load past projects");
         }
 
         const users = Array.isArray(creativeData?.users) ? creativeData.users : [];
@@ -93,16 +103,19 @@ export default function CreativeProfilePage() {
           setError("Creative profile not found.");
           setCreative(DEFAULT_USER);
           setPortfolio([]);
+          setPastProjects([]);
           return;
         }
 
         setCreative(normalizeUser(target));
         setPortfolio(Array.isArray(portfolioData?.items) ? portfolioData.items : []);
+        setPastProjects(Array.isArray(projectsData?.projects) ? projectsData.projects : []);
       } catch (err) {
         if (!mounted) return;
         setError(err.message || "Failed to load creative profile");
         setCreative(DEFAULT_USER);
         setPortfolio([]);
+        setPastProjects([]);
       } finally {
         if (!mounted) return;
         setLoading(false);
@@ -123,7 +136,6 @@ export default function CreativeProfilePage() {
   }, [creativeId]);
 
   const skills = useMemo(() => parseList(creative.skills), [creative.skills]);
-  const pastProjects = useMemo(() => parseList(creative.past_projects), [creative.past_projects]);
 
   return (
     <div className="space-y-6">
@@ -240,16 +252,34 @@ export default function CreativeProfilePage() {
               {pastProjects.length === 0 ? (
                 <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No past projects listed.</p>
               ) : (
-                <div className="mt-3 space-y-2">
-                  {pastProjects.map((project) => (
-                    <div
-                      key={project}
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                    >
-                      <BriefcaseBusiness size={14} />
-                      {project}
-                    </div>
-                  ))}
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {pastProjects.map((project) => {
+                    const projectId = getProjectId(project);
+
+                    return (
+                      <Card
+                        key={projectId || `${project.title}-${project.project_type}`}
+                        className="p-4"
+                        as="article"
+                        onClick={() => {
+                          if (projectId) navigate(`/project/${projectId}`);
+                        }}
+                      >
+                        <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100">{project.title || "Untitled Project"}</h4>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{project.project_type || "No project type"}</p>
+
+                        {projectId ? (
+                          <Button
+                            variant="neutral"
+                            className="mt-3"
+                            onClick={() => navigate(`/project/${projectId}`)}
+                          >
+                            View Project Info
+                          </Button>
+                        ) : null}
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </Card>
@@ -259,3 +289,5 @@ export default function CreativeProfilePage() {
     </div>
   );
 }
+
+
