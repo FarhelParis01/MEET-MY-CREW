@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MapPin, MessageSquare, FolderPlus, BriefcaseBusiness, Link2 } from "lucide-react";
+import { MapPin, MessageSquare, FolderPlus, Link2 } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
-const SEARCH_URL = "http://localhost/meet-my-crew/backend/public/search.php";
+const GET_USER_PROFILE_URL = "http://localhost/meet-my-crew/backend/public/get-user-profile.php";
 const GET_USER_PORTFOLIO_URL = "http://localhost/meet-my-crew/backend/public/get-user-portfolio.php";
 const GET_USER_PROJECTS_URL = "http://localhost/meet-my-crew/backend/public/get-user-projects.php";
 
@@ -39,10 +39,13 @@ function getProjectId(project) {
   return project?.id || project?.project_id || null;
 }
 
-function normalizeUser(user) {
+function normalizeUser(user, profile) {
   return {
     ...DEFAULT_USER,
     ...(user || {}),
+    bio: profile?.bio || user?.bio || "",
+    skills: profile?.skills || user?.skills || "",
+    photo: profile?.photo || user?.photo || "",
   };
 }
 
@@ -74,18 +77,18 @@ export default function CreativeProfilePage() {
       setError("");
 
       try {
-        const [creativeResponse, portfolioResponse, projectsResponse] = await Promise.all([
-          fetch(SEARCH_URL, { credentials: "include" }),
+        const [profileResponse, portfolioResponse, projectsResponse] = await Promise.all([
+          fetch(`${GET_USER_PROFILE_URL}?user_id=${encodeURIComponent(creativeId || "")}`, { credentials: "include" }),
           fetch(`${GET_USER_PORTFOLIO_URL}?user_id=${encodeURIComponent(creativeId || "")}`, { credentials: "include" }),
           fetch(`${GET_USER_PROJECTS_URL}?user_id=${encodeURIComponent(creativeId || "")}`, { credentials: "include" }),
         ]);
 
-        const creativeData = await parseJsonSafe(creativeResponse);
+        const profileData = await parseJsonSafe(profileResponse);
         const portfolioData = await parseJsonSafe(portfolioResponse);
         const projectsData = await parseJsonSafe(projectsResponse);
 
-        if (!creativeResponse.ok) {
-          throw new Error(creativeData?.error || "Failed to load creative profiles");
+        if (!profileResponse.ok) {
+          throw new Error(profileData?.error || "Failed to load creative profile");
         }
         if (!portfolioResponse.ok) {
           throw new Error(portfolioData?.error || "Failed to load portfolio");
@@ -94,20 +97,9 @@ export default function CreativeProfilePage() {
           throw new Error(projectsData?.error || "Failed to load past projects");
         }
 
-        const users = Array.isArray(creativeData?.users) ? creativeData.users : [];
-        const target = users.find((u) => parseId(u.user_id) === creativeId);
-
         if (!mounted) return;
 
-        if (!target) {
-          setError("Creative profile not found.");
-          setCreative(DEFAULT_USER);
-          setPortfolio([]);
-          setPastProjects([]);
-          return;
-        }
-
-        setCreative(normalizeUser(target));
+        setCreative(normalizeUser(profileData?.user, profileData?.profile));
         setPortfolio(Array.isArray(portfolioData?.items) ? portfolioData.items : []);
         setPastProjects(Array.isArray(projectsData?.projects) ? projectsData.projects : []);
       } catch (err) {
@@ -157,7 +149,7 @@ export default function CreativeProfilePage() {
       ) : (
         <>
           <Card>
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="flex items-center gap-4">
                 <img
                   src={creative.photo || `https://i.pravatar.cc/220?u=${encodeURIComponent(creative.full_name || "creative")}`}
@@ -170,7 +162,9 @@ export default function CreativeProfilePage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400">{creative.role || "Creative"}</p>
                   <div className="mt-1 inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <MapPin size={14} className="text-teal-500" />
-                    {creative.city || "Unknown city"}{creative.city && creative.region ? ", " : ""}{creative.region || "Unknown region"}
+                    {creative.city || "Unknown city"}
+                    {creative.city && creative.region ? ", " : ""}
+                    {creative.region || "Unknown region"}
                   </div>
                 </div>
               </div>
@@ -194,12 +188,10 @@ export default function CreativeProfilePage() {
             </div>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">About</h3>
-              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-                {creative.bio || "No bio added yet."}
-              </p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{creative.bio || "No bio added yet."}</p>
             </Card>
 
             <Card>
@@ -252,28 +244,17 @@ export default function CreativeProfilePage() {
               {pastProjects.length === 0 ? (
                 <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No past projects listed.</p>
               ) : (
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {pastProjects.map((project) => {
                     const projectId = getProjectId(project);
 
                     return (
-                      <Card
-                        key={projectId || `${project.title}-${project.project_type}`}
-                        className="p-4"
-                        as="article"
-                        onClick={() => {
-                          if (projectId) navigate(`/project/${projectId}`);
-                        }}
-                      >
+                      <Card key={projectId || `${project.title}-${project.project_type}`} className="p-4" as="article">
                         <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100">{project.title || "Untitled Project"}</h4>
                         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{project.project_type || "No project type"}</p>
 
                         {projectId ? (
-                          <Button
-                            variant="neutral"
-                            className="mt-3"
-                            onClick={() => navigate(`/project/${projectId}`)}
-                          >
+                          <Button variant="neutral" className="mt-3" onClick={() => navigate(`/project/${projectId}`)}>
                             View Project Info
                           </Button>
                         ) : null}
@@ -289,5 +270,3 @@ export default function CreativeProfilePage() {
     </div>
   );
 }
-
-

@@ -1,18 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Download } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
 const GET_USERS_URL = "http://localhost/meet-my-crew/backend/public/admin/get-users.php";
-const SUSPEND_USER_URL = "http://localhost/meet-my-crew/backend/public/admin/suspend-user.php";
 const DELETE_USER_URL = "http://localhost/meet-my-crew/backend/public/admin/delete-user.php";
-const FALLBACK_USER_STATUS_URL = "http://localhost/meet-my-crew/backend/public/admin-user-status.php";
+const USER_STATUS_URL = "http://localhost/meet-my-crew/backend/public/admin-user-status.php";
 
 function normalizeUsers(payload) {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.users)) return payload.users;
   if (Array.isArray(payload?.data)) return payload.data;
   return [];
+}
+
+function downloadCsv(filename, headers, rows) {
+  const escapeCell = (value) => {
+    const text = String(value ?? "");
+    if (text.includes(",") || text.includes("\n") || text.includes('"')) {
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+    return text;
+  };
+
+  const csv = [headers.map(escapeCell).join(","), ...rows.map((row) => row.map(escapeCell).join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 async function parseJsonSafe(response) {
@@ -63,41 +84,51 @@ export default function AdminUsers() {
     [users]
   );
 
-  async function handleSuspendUser(userId) {
+  function handleDownloadUsers() {
+    const rows = sortedUsers.map((user) => [
+      user.user_id || user.id || "",
+      user.full_name || "",
+      user.role || "",
+      user.city || "",
+      user.account_type || "user",
+      user.status || "active",
+    ]);
+
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    downloadCsv(
+      `admin-users-${stamp}.csv`,
+      ["user_id", "full_name", "role", "city", "account_type", "status"],
+      rows
+    );
+  }
+
+  async function handleToggleUserStatus(userId, currentStatus) {
+    const nextStatus = String(currentStatus || "").toLowerCase() === "suspended" ? "active" : "suspended";
+
     setActingUserId(userId);
     setError("");
     setNotice("");
 
     try {
-      let response = await fetch(SUSPEND_USER_URL, {
+      const response = await fetch(USER_STATUS_URL, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId }),
+        body: JSON.stringify({ user_id: userId, status: nextStatus }),
       });
 
-      let data = await parseJsonSafe(response);
+      const data = await parseJsonSafe(response);
 
       if (!response.ok) {
-        response = await fetch(FALLBACK_USER_STATUS_URL, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId, status: "suspended" }),
-        });
-        data = await parseJsonSafe(response);
-      }
-
-      if (!response.ok) {
-        throw new Error(data?.error || "Failed to suspend user");
+        throw new Error(data?.error || "Failed to update user status");
       }
 
       setUsers((prev) =>
-        prev.map((u) => (String(u.user_id) === String(userId) ? { ...u, status: "suspended" } : u))
+        prev.map((u) => (String(u.user_id || u.id) === String(userId) ? { ...u, status: nextStatus } : u))
       );
-      setNotice(data?.message || "User suspended");
+      setNotice(data?.message || `User ${nextStatus}`);
     } catch (err) {
-      setError(err.message || "Failed to suspend user");
+      setError(err.message || "Failed to update user status");
     } finally {
       setActingUserId(null);
     }
@@ -125,7 +156,7 @@ export default function AdminUsers() {
         throw new Error(data?.error || "Failed to delete user");
       }
 
-      setUsers((prev) => prev.filter((u) => String(u.user_id) !== String(userId)));
+      setUsers((prev) => prev.filter((u) => String(u.user_id || u.id) !== String(userId)));
       setNotice(data?.message || "User deleted");
     } catch (err) {
       setError(err.message || "Failed to delete user");
@@ -135,10 +166,18 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Users</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Manage platform users and account status.</p>
+        <Button
+          variant="neutral"
+          className="rounded-md px-3 py-2 text-sm"
+          onClick={handleDownloadUsers}
+          disabled={loading || sortedUsers.length === 0}
+        >
+          <Download size={16} />
+          Download Users
+        </Button>
       </div>
 
       {notice ? (
@@ -153,17 +192,17 @@ export default function AdminUsers() {
         </Card>
       ) : null}
 
-      <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+      <Card className="min-w-0 p-0 overflow-hidden">
+        <div className="w-full max-w-full overflow-x-auto">
+          <table className="w-max min-w-[1120px] text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60">
               <tr>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Name</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Role</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">City</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Account Type</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Status</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Name</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Role</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">City</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Account Type</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Status</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -182,16 +221,17 @@ export default function AdminUsers() {
               ) : (
                 sortedUsers.map((user) => {
                   const userId = user.user_id || user.id;
-                  const isSuspended = String(user.status || "").toLowerCase() === "suspended";
+                  const status = String(user.status || "active").toLowerCase();
+                  const isSuspended = status === "suspended";
                   const isActing = actingUserId && String(actingUserId) === String(userId);
 
                   return (
                     <tr key={userId} className="border-b border-slate-200 dark:border-slate-700">
-                      <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{user.full_name || "-"}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.role || "-"}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.city || "-"}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.account_type || "user"}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-900 dark:text-slate-100">{user.full_name || "-"}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">{user.role || "-"}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">{user.city || "-"}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">{user.account_type || "user"}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <span
                           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                             isSuspended
@@ -199,33 +239,33 @@ export default function AdminUsers() {
                               : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
                           }`}
                         >
-                          {user.status || "active"}
+                          {status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-2">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex flex-nowrap items-center gap-2">
                           <Button
                             variant="neutral"
-                            className="px-3 py-1 text-xs"
+                            className="rounded-md px-2.5 py-1.5 text-xs"
                             onClick={() => navigate(`/creative/${encodeURIComponent(userId)}`)}
                           >
                             View Profile
                           </Button>
                           <Button
-                            variant="secondary"
-                            className="px-3 py-1 text-xs"
-                            disabled={isSuspended || isActing}
-                            onClick={() => handleSuspendUser(userId)}
+                            variant={isSuspended ? "primary" : "secondary"}
+                            className="rounded-md px-2.5 py-1.5 text-xs"
+                            disabled={isActing}
+                            onClick={() => handleToggleUserStatus(userId, status)}
                           >
-                            Suspend User
+                            {isSuspended ? "Activate" : "Suspend"}
                           </Button>
                           <Button
                             variant="neutral"
-                            className="px-3 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"
+                            className="rounded-md px-2.5 py-1.5 text-xs bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"
                             disabled={isActing}
                             onClick={() => handleDeleteUser(userId)}
                           >
-                            Delete User
+                            Delete
                           </Button>
                         </div>
                       </td>
@@ -240,3 +280,6 @@ export default function AdminUsers() {
     </div>
   );
 }
+
+
+

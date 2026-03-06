@@ -1,5 +1,6 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Users, FolderKanban, Briefcase } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Users, FolderKanban, Briefcase, ArrowLeft } from "lucide-react";
+import Button from "../ui/Button";
 
 const navItems = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
@@ -9,12 +10,21 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-6 py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold">Admin Panel</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Platform management and monitoring tools.</p>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-semibold">Admin Dashboard</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Platform management and monitoring tools.</p>
+          </div>
+
+          <Button variant="neutral" className="rounded-md px-3 py-2 text-sm" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft size={16} />
+            Back to App
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
@@ -43,7 +53,7 @@ export default function AdminLayout() {
             </nav>
           </aside>
 
-          <section>
+          <section className="min-w-0">
             <Outlet />
           </section>
         </div>
@@ -51,3 +61,4 @@ export default function AdminLayout() {
     </div>
   );
 }
+

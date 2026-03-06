@@ -112,7 +112,7 @@ export default function AdminProjects() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       <div>
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Projects</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">Review all projects and manage platform content.</p>
@@ -130,16 +130,16 @@ export default function AdminProjects() {
         </Card>
       ) : null}
 
-      <Card className="p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+      <Card className="min-w-0 p-0 overflow-hidden">
+        <div className="w-full max-w-full overflow-x-auto">
+          <table className="w-max min-w-[980px] text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60">
               <tr>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Title</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Creator</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Project Type</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Members Count</th>
-                <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200">Actions</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Title</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Creator</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Project Type</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Members Count</th>
+                <th className="px-4 py-3 whitespace-nowrap font-semibold text-slate-700 dark:text-slate-200">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -162,14 +162,14 @@ export default function AdminProjects() {
 
                   return (
                     <tr key={projectId || `${project.title}-${project.creator_name}`} className="border-b border-slate-200 dark:border-slate-700">
-                      <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{project.title || "Untitled Project"}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-900 dark:text-slate-100">{project.title || "Untitled Project"}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
                         {project.creator_name || project.full_name || project.creator || "Unknown"}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{project.project_type || "-"}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{getMembersCount(project)}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-2">
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">{project.project_type || "-"}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">{getMembersCount(project)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex flex-nowrap items-center gap-2">
                           <Button
                             variant="neutral"
                             className="px-3 py-1 text-xs"
@@ -199,3 +199,6 @@ export default function AdminProjects() {
     </div>
   );
 }
+
+
+
