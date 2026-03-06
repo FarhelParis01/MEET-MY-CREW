@@ -20,7 +20,12 @@ if ($user_id <= 0) {
 $projects_created = [];
 $projects_joined = [];
 
-$createdStmt = $conn->prepare("SELECT * FROM projects WHERE creator_id = ?");
+$createdStmt = $conn->prepare(
+  "SELECT p.*, u.full_name AS creator_name
+   FROM projects p
+   JOIN users u ON u.user_id = p.creator_id
+   WHERE p.creator_id = ?"
+);
 if (!$createdStmt) {
   http_response_code(500);
   echo json_encode(["error" => "Failed to prepare created projects query"]);
@@ -36,9 +41,10 @@ while ($row = $createdResult->fetch_assoc()) {
 $createdStmt->close();
 
 $joinedStmt = $conn->prepare(
-  "SELECT p.*
+  "SELECT p.*, u.full_name AS creator_name
    FROM project_members pm
    JOIN projects p ON pm.project_id = p.id
+   JOIN users u ON u.user_id = p.creator_id
    WHERE pm.user_id = ?"
 );
 if (!$joinedStmt) {

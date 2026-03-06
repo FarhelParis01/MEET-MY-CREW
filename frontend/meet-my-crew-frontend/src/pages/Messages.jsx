@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MessageSquare, Send, Users } from "lucide-react";
+import { MessageSquare, Send, Users, ArrowLeft } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
@@ -30,6 +30,11 @@ function formatTimestamp(value) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function isMobileViewport() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(max-width: 1023px)").matches;
 }
 
 async function parseJsonSafe(response) {
@@ -74,6 +79,7 @@ export default function Messages() {
   const [projectChats, setProjectChats] = useState([]);
   const [activeMode, setActiveMode] = useState("direct");
   const [activeId, setActiveId] = useState(null);
+  const [mobileShowChat, setMobileShowChat] = useState(false);
 
   const [chatMessages, setChatMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +93,9 @@ export default function Messages() {
   const chatTitle = useMemo(() => {
     if (activeMode === "project") {
       const project = projectChats.find((p) => p.id === activeId);
-      return project?.title || "Project Chat";
+      if (!project) return "Project Chat";
+      const creatorName = project.creator_name || "Unknown creator";
+      return `${project.title} - ${creatorName}`;
     }
 
     const direct = directConversations.find((d) => d.id === activeId);
@@ -113,7 +121,7 @@ export default function Messages() {
     setDirectConversations(getDirectConversations(messages, uid));
   }
 
-  async function fetchProjectChatList() {
+  async function fetchProjectChatList(uid) {
     const res = await fetch(MY_PROJECTS_URL, { credentials: "include" });
     const data = await parseJsonSafe(res);
     if (!res.ok) throw new Error(data?.error || "Failed to load projects");
@@ -126,9 +134,14 @@ export default function Messages() {
       const id = parseId(project.id ?? project.project_id);
       if (!id) return;
       if (!map.has(id)) {
+        const creatorName =
+          project.creator_name ||
+          (parseId(project.creator_id) === uid ? "You" : `User #${project.creator_id || "?"}`);
+
         map.set(id, {
           id,
           title: project.title || `Project #${id}`,
+          creator_name: creatorName,
         });
       }
     });
@@ -183,7 +196,7 @@ export default function Messages() {
         const uid = await fetchProfile();
         if (!mounted) return;
 
-        await Promise.all([fetchDirectConversationList(uid), fetchProjectChatList()]);
+        await Promise.all([fetchDirectConversationList(uid), fetchProjectChatList(uid)]);
       } catch (err) {
         if (!mounted) return;
         setError(err.message || "Failed to load conversations");
@@ -204,12 +217,14 @@ export default function Messages() {
     if (selectedProjectId) {
       setActiveMode("project");
       setActiveId(selectedProjectId);
+      if (isMobileViewport()) setMobileShowChat(true);
       return;
     }
 
     if (selectedUserId) {
       setActiveMode("direct");
       setActiveId(selectedUserId);
+      if (isMobileViewport()) setMobileShowChat(true);
       return;
     }
 
@@ -266,12 +281,18 @@ export default function Messages() {
     setActiveMode("direct");
     setActiveId(userId);
     setSearchParams({ user_id: String(userId) });
+    if (isMobileViewport()) setMobileShowChat(true);
   }
 
   function selectProjectChat(projectId) {
     setActiveMode("project");
     setActiveId(projectId);
     setSearchParams({ project_id: String(projectId) });
+    if (isMobileViewport()) setMobileShowChat(true);
+  }
+
+  function goBackToConversations() {
+    setMobileShowChat(false);
   }
 
   async function handleSendMessage(event) {
@@ -328,8 +349,8 @@ export default function Messages() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[70vh]">
-      <aside className="lg:col-span-4">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-9rem)] min-h-[calc(100vh-9rem)]">
+      <aside className={`${mobileShowChat ? "hidden" : "col-span-12 lg:col-span-4"}`}>
         <Card className="p-4 h-full">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Conversations</h2>
 
@@ -378,7 +399,7 @@ export default function Messages() {
                     }`}
                   >
                     <p className="font-semibold text-slate-900 dark:text-slate-100">{project.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Project #{project.id}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">by {project.creator_name}</p>
                   </button>
                 ))
               )}
@@ -387,13 +408,21 @@ export default function Messages() {
         </Card>
       </aside>
 
-      <section className="lg:col-span-8">
+      <section className={`${mobileShowChat ? "col-span-12" : "hidden col-span-12 lg:block lg:col-span-8"}`}>
         <Card className="p-4 h-full flex flex-col">
           <div className="pb-3 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-2">
-              {activeMode === "project" ? <Users size={16} className="text-teal-500" /> : <MessageSquare size={16} className="text-blue-600" />}
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{chatTitle}</h3>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                {activeMode === "project" ? <Users size={16} className="text-teal-500" /> : <MessageSquare size={16} className="text-blue-600" />}
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{chatTitle}</h3>
+              </div>
+
+              <Button variant="neutral" className="px-3 py-1.5 text-sm" onClick={goBackToConversations}>
+                <ArrowLeft size={14} />
+                Back
+              </Button>
             </div>
+
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {activeMode === "project" ? "Project chat" : "Direct messages"}
             </p>
@@ -405,7 +434,7 @@ export default function Messages() {
             </Card>
           ) : null}
 
-          <div className="flex-1 mt-3 space-y-2 overflow-y-auto min-h-[320px]">
+          <div className="flex-1 mt-3 space-y-2 overflow-y-auto min-h-0">
             {loading ? (
               <p className="text-sm text-slate-500 dark:text-slate-400">Loading messages...</p>
             ) : !activeId ? (
@@ -453,3 +482,5 @@ export default function Messages() {
     </div>
   );
 }
+
+
