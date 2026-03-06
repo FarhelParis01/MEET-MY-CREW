@@ -17,6 +17,7 @@ if ($user_id <= 0) {
   exit;
 }
 
+
 $stmt = $conn->prepare(
   "SELECT
       item_id,
