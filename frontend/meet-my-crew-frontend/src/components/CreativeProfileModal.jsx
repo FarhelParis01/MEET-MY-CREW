@@ -8,6 +8,16 @@ export default function CreativeProfileModal({ open, creative, onClose, onInvite
 
   if (!open || !creative) return null;
 
+  function goToChat() {
+    onClose?.();
+    navigate(`/messages?user_id=${encodeURIComponent(creative.user_id || creative.id || "")}`);
+  }
+
+  function goToFullProfile() {
+    onClose?.();
+    navigate(`/creative/${encodeURIComponent(creative.user_id || creative.id || "")}`);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
       <Card className="w-full max-w-md p-5">
@@ -50,19 +60,14 @@ export default function CreativeProfileModal({ open, creative, onClose, onInvite
         </div>
 
         <div className="mt-5 flex flex-wrap justify-end gap-2">
-          <Button
-            variant="primary"
-            className="px-3 py-1.5 text-sm"
-            onClick={() => navigate(`/messages?user_id=${encodeURIComponent(creative.user_id || creative.id || "")}`)}
-          >
+          <Button variant="primary" className="px-3 py-1.5 text-sm" onClick={goToChat}>
             Chat
           </Button>
-          <Button
-            variant="secondary"
-            className="px-3 py-1.5 text-sm"
-            onClick={() => onInvite?.(creative)}
-          >
+          <Button variant="secondary" className="px-3 py-1.5 text-sm" onClick={() => onInvite?.(creative)}>
             Invite to Project
+          </Button>
+          <Button variant="neutral" className="px-3 py-1.5 text-sm" onClick={goToFullProfile}>
+            View Full Profile
           </Button>
         </div>
       </Card>

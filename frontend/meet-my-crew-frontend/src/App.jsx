@@ -10,6 +10,7 @@ import Messages from "./pages/Messages";
 import StartProject from "./pages/StartProject";
 import MyProjects from "./pages/MyProjects";
 import ProjectDetails from "./pages/ProjectDetails";
+import CreativeProfilePage from "./pages/CreativeProfilePage";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/start-project" element={<StartProject />} />
         <Route path="/my-projects" element={<MyProjects />} />
         <Route path="/project/:id" element={<ProjectDetails />} />
+        <Route path="/creative/:id" element={<CreativeProfilePage />} />
       </Route>
     </Routes>
   );
