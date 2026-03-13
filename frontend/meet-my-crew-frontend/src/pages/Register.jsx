@@ -30,6 +30,15 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
+  const inputClassName =
+    "w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-400";
+  const selectBaseClassName =
+    "w-full appearance-none rounded-md bg-white border border-slate-200 px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20 dark:bg-slate-900 dark:border-slate-700 dark:[color-scheme:dark]";
+  const selectOptionClassName =
+    "bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100";
+  const selectPlaceholderOptionClassName =
+    "bg-white text-slate-500 dark:bg-slate-900 dark:text-slate-400";
+
   async function handleSubmit(e) {
     e.preventDefault();
     setErr("");
@@ -88,9 +97,7 @@ export default function Register() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Full Name"
-              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
-                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
-                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              className={inputClassName}
               required
             />
           </div>
@@ -108,9 +115,7 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
-              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
-                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
-                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              className={inputClassName}
               required
             />
           </div>
@@ -128,9 +133,7 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full rounded-md bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400
-                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
-                         dark:bg-white/10 dark:border-white/10 dark:text-white dark:placeholder:text-white/40"
+              className={inputClassName}
               required
             />
           </div>
@@ -147,19 +150,31 @@ export default function Register() {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full appearance-none rounded-md bg-white border border-slate-200 text-slate-900
-                         px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
-                         dark:bg-white/10 dark:border-white/10 dark:text-white"
+              className={`${selectBaseClassName} ${
+                role
+                  ? "text-slate-900 dark:text-slate-100"
+                  : "text-slate-500 dark:text-slate-400"
+              }`}
               required
             >
-              <option value="" className="text-slate-900">
+              <option value="" className={selectPlaceholderOptionClassName}>
                 -- Select Role --
               </option>
-              <option value="Actor">Actor</option>
-              <option value="Editor">Editor</option>
-              <option value="Producer">Producer</option>
-              <option value="Director">Director</option>
-              <option value="Cinematographer">Cinematographer</option>
+              <option value="Actor" className={selectOptionClassName}>
+                Actor
+              </option>
+              <option value="Editor" className={selectOptionClassName}>
+                Editor
+              </option>
+              <option value="Producer" className={selectOptionClassName}>
+                Producer
+              </option>
+              <option value="Director" className={selectOptionClassName}>
+                Director
+              </option>
+              <option value="Cinematographer" className={selectOptionClassName}>
+                Cinematographer
+              </option>
             </select>
           </div>
         </div>
@@ -176,17 +191,31 @@ export default function Register() {
               <select
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
-                className="w-full appearance-none rounded-md bg-white border border-slate-200 text-slate-900
-                           px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
-                           dark:bg-white/10 dark:border-white/10 dark:text-white"
+                className={`${selectBaseClassName} ${
+                  region
+                    ? "text-slate-900 dark:text-slate-100"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
                 required
               >
-                <option value="">-- Select Region --</option>
-                <option value="Centre">Centre</option>
-                <option value="Littoral">Littoral</option>
-                <option value="West">West</option>
-                <option value="North West">North West</option>
-                <option value="South West">South West</option>
+                <option value="" className={selectPlaceholderOptionClassName}>
+                  -- Select Region --
+                </option>
+                <option value="Centre" className={selectOptionClassName}>
+                  Centre
+                </option>
+                <option value="Littoral" className={selectOptionClassName}>
+                  Littoral
+                </option>
+                <option value="West" className={selectOptionClassName}>
+                  West
+                </option>
+                <option value="North West" className={selectOptionClassName}>
+                  North West
+                </option>
+                <option value="South West" className={selectOptionClassName}>
+                  South West
+                </option>
               </select>
             </div>
           </div>
@@ -201,17 +230,31 @@ export default function Register() {
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full appearance-none rounded-md bg-white border border-slate-200 text-slate-900
-                           px-11 py-3 outline-none focus:border-[#1b4bff] focus:ring-2 focus:ring-[#1b4bff]/20
-                           dark:bg-white/10 dark:border-white/10 dark:text-white"
+                className={`${selectBaseClassName} ${
+                  city
+                    ? "text-slate-900 dark:text-slate-100"
+                    : "text-slate-500 dark:text-slate-400"
+                }`}
                 required
               >
-                <option value="">-- Select City --</option>
-                <option value="Yaounde">Yaounde</option>
-                <option value="Douala">Douala</option>
-                <option value="Buea">Buea</option>
-                <option value="Bamenda">Bamenda</option>
-                <option value="Bafoussam">Bafoussam</option>
+                <option value="" className={selectPlaceholderOptionClassName}>
+                  -- Select City --
+                </option>
+                <option value="Yaounde" className={selectOptionClassName}>
+                  Yaounde
+                </option>
+                <option value="Douala" className={selectOptionClassName}>
+                  Douala
+                </option>
+                <option value="Buea" className={selectOptionClassName}>
+                  Buea
+                </option>
+                <option value="Bamenda" className={selectOptionClassName}>
+                  Bamenda
+                </option>
+                <option value="Bafoussam" className={selectOptionClassName}>
+                  Bafoussam
+                </option>
               </select>
             </div>
           </div>
@@ -272,4 +315,3 @@ export default function Register() {
     </AuthShell>
   );
 }
-

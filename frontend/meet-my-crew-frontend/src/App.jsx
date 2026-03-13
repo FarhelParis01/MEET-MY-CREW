@@ -20,11 +20,13 @@ import AdminPortfolio from "./pages/AdminPortfolio";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import About from "./pages/About";
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route path="/" element={<Navigate to="/about" replace />} />
+      <Route path="/about" element={<About />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
