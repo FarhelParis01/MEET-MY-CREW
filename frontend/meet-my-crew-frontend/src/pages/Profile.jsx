@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Mail, Camera, Link2, X } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -7,6 +6,9 @@ import Button from "../components/ui/Button";
 const MY_PROFILE_URL = "http://localhost/meet-my-crew/backend/public/my-profile.php";
 const MY_PORTFOLIO_URL = "http://localhost/meet-my-crew/backend/public/my-portfolio.php";
 const ADD_PORTFOLIO_URL = "http://localhost/meet-my-crew/backend/public/portfolio-add-link.php";
+const UPLOAD_PROFILE_PHOTO_URL = "http://localhost/meet-my-crew/backend/public/upload-profile-photo.php";
+const UPDATE_PROFILE_URL = "http://localhost/meet-my-crew/backend/public/update-profile.php";
+const BACKEND_PUBLIC_URL = "http://localhost/meet-my-crew/backend/public";
 
 const DEFAULT_USER = {
   user_id: null,
@@ -28,6 +30,13 @@ function parseSkills(skills) {
   return [];
 }
 
+function getProfilePhotoUrl(user) {
+  const photoPath = user.profile_photo || user.photo || "";
+  if (!photoPath) return `https://i.pravatar.cc/240?u=${encodeURIComponent(user.full_name || "user")}`;
+  if (/^https?:\/\//i.test(photoPath)) return photoPath;
+  return `${BACKEND_PUBLIC_URL}/${String(photoPath).replace(/^\/+/, "")}`;
+}
+
 async function parseJsonSafe(response) {
   try {
     return await response.json();
@@ -37,14 +46,14 @@ async function parseJsonSafe(response) {
 }
 
 export default function Profile() {
-  const navigate = useNavigate();
-
   const [user, setUser] = useState(DEFAULT_USER);
   const [portfolioItems, setPortfolioItems] = useState([]);
+  const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [showPortfolioForm, setShowPortfolioForm] = useState(false);
   const [portfolioForm, setPortfolioForm] = useState({
@@ -54,6 +63,13 @@ export default function Profile() {
   });
   const [savingPortfolio, setSavingPortfolio] = useState(false);
   const [portfolioFormError, setPortfolioFormError] = useState("");
+  const [showEditProfileForm, setShowEditProfileForm] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({
+    bio: "",
+    skills: "",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [editProfileError, setEditProfileError] = useState("");
 
   const skills = useMemo(() => {
     const parsed = parseSkills(user.skills);
@@ -125,6 +141,21 @@ export default function Profile() {
     setPortfolioFormError("");
   }
 
+  function openEditProfileForm() {
+    setEditProfileError("");
+    setEditProfileForm({
+      bio: user.bio || "",
+      skills: typeof user.skills === "string" ? user.skills : parseSkills(user.skills).join(", "),
+    });
+    setShowEditProfileForm(true);
+  }
+
+  function closeEditProfileForm() {
+    setShowEditProfileForm(false);
+    setSavingProfile(false);
+    setEditProfileError("");
+  }
+
   async function savePortfolioItem(event) {
     event.preventDefault();
     setPortfolioFormError("");
@@ -161,6 +192,102 @@ export default function Profile() {
     }
   }
 
+  function triggerPhotoPicker() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleUpload(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Only JPG, JPEG, and PNG files are allowed.");
+      return;
+    }
+
+    const maxSizeBytes = 2 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      setError("Profile photo must be 2MB or smaller.");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const formData = new FormData();
+      formData.append("photo", file);
+
+      const response = await fetch(UPLOAD_PROFILE_PHOTO_URL, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) throw new Error(data?.error || "Failed to upload profile photo");
+
+      const updatedPhoto = data?.photo || "";
+      if (!updatedPhoto) throw new Error("Upload succeeded but photo path is missing.");
+
+      setUser((prev) => ({
+        ...prev,
+        photo: updatedPhoto,
+        profile_photo: updatedPhoto,
+      }));
+      setNotice("Profile photo updated successfully.");
+    } catch (err) {
+      setError(err.message || "Failed to upload profile photo");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
+
+  async function saveProfileChanges(event) {
+    event.preventDefault();
+    setEditProfileError("");
+    setSavingProfile(true);
+
+    const nextBio = editProfileForm.bio.trim();
+    const nextSkills = editProfileForm.skills
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(", ");
+
+    try {
+      const response = await fetch(UPDATE_PROFILE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          bio: nextBio,
+          skills: nextSkills,
+        }),
+      });
+
+      const data = await parseJsonSafe(response);
+      if (!response.ok) throw new Error(data?.error || "Failed to update profile");
+
+      setUser((prev) => ({
+        ...prev,
+        bio: nextBio,
+        skills: nextSkills,
+      }));
+      setNotice("Profile updated successfully.");
+      closeEditProfileForm();
+    } catch (err) {
+      setEditProfileError(err.message || "Failed to update profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -190,7 +317,7 @@ export default function Profile() {
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex items-center gap-4">
                 <img
-                  src={user.photo || `https://i.pravatar.cc/240?u=${encodeURIComponent(user.full_name || "user")}`}
+                  src={getProfilePhotoUrl(user)}
                   alt={user.full_name}
                   className="h-20 w-20 rounded-full object-cover"
                 />
@@ -205,10 +332,17 @@ export default function Profile() {
                 </div>
               </div>
 
-              <Button variant="neutral" onClick={() => navigate("/profile/edit")}>
+              <Button variant="neutral" onClick={triggerPhotoPicker} disabled={uploadingPhoto}>
                 <Camera size={16} />
-                Change Photo
+                {uploadingPhoto ? "Uploading..." : "Change Photo"}
               </Button>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleUpload}
+              />
             </div>
           </Card>
 
@@ -224,7 +358,12 @@ export default function Profile() {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">About</h3>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">About</h3>
+              <Button variant="neutral" className="px-3 py-1.5 text-sm" onClick={openEditProfileForm}>
+                Edit Profile
+              </Button>
+            </div>
             <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
               {user.bio || "No bio available."}
             </p>
@@ -339,6 +478,61 @@ export default function Profile() {
                 </Button>
                 <Button type="submit" variant="primary" className="px-3 py-1.5 text-sm" disabled={savingPortfolio}>
                   {savingPortfolio ? "Saving..." : "Save Item"}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      ) : null}
+
+      {showEditProfileForm ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+          <Card className="w-full max-w-lg p-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Edit Profile</h3>
+              <button
+                onClick={closeEditProfileForm}
+                className="rounded-lg border border-slate-200 p-2 text-slate-500 dark:border-slate-700 dark:text-slate-400"
+                aria-label="Close edit profile form"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {editProfileError ? (
+              <Card className="mt-3 p-3 border-red-200 dark:border-red-700">
+                <p className="text-sm text-red-700 dark:text-red-300">{editProfileError}</p>
+              </Card>
+            ) : null}
+
+            <form className="mt-4 space-y-3" onSubmit={saveProfileChanges}>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Bio</label>
+                <textarea
+                  rows={5}
+                  value={editProfileForm.bio}
+                  onChange={(e) => setEditProfileForm((prev) => ({ ...prev, bio: e.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  placeholder="Tell people about yourself"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Skills</label>
+                <input
+                  value={editProfileForm.skills}
+                  onChange={(e) => setEditProfileForm((prev) => ({ ...prev, skills: e.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  placeholder="Directing, Editing, Cinematography"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="neutral" className="px-3 py-1.5 text-sm" onClick={closeEditProfileForm}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" className="px-3 py-1.5 text-sm" disabled={savingProfile}>
+                  {savingProfile ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </form>

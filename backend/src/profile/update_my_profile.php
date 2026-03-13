@@ -7,6 +7,9 @@ require_once __DIR__ . "/../config/database.php";
 $user_id = $_SESSION["user_id"];
 
 $data = json_decode(file_get_contents("php://input"), true);
+if (!is_array($data)) {
+  $data = [];
+}
 
 $bio          = trim($data["bio"] ?? "");
 $skills       = trim($data["skills"] ?? "");
@@ -53,4 +56,7 @@ if (!$ok) {
   exit;
 }
 
-echo json_encode(["message" => "Profile saved successfully"]);
+echo json_encode([
+  "success" => true,
+  "message" => "Profile updated successfully",
+]);
