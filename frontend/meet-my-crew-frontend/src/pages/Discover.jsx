@@ -24,6 +24,10 @@ function parseCreatives(payload) {
   return [];
 }
 
+function getCreativeAvatar(user) {
+  return user?.profile_photo_url || "/default-avatar.png";
+}
+
 async function parseJsonSafe(response) {
   try {
     return await response.json();
@@ -284,8 +288,12 @@ export default function Discover() {
               <Card key={user.user_id || user.id || user.full_name} className="p-4" as="article">
                 <div className="flex items-center gap-3">
                   <img
-                    src={user.photo || user.profile_image || `https://i.pravatar.cc/200?u=${encodeURIComponent(user.full_name || "creative")}`}
+                    src={getCreativeAvatar(user)}
                     alt={user.full_name || "Creative profile"}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/default-avatar.png";
+                    }}
                     className="h-12 w-12 rounded-full object-cover"
                   />
                   <div>

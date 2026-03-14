@@ -18,6 +18,8 @@ export default function CreativeProfileModal({ open, creative, onClose, onInvite
     navigate(`/creative/${encodeURIComponent(creative.user_id || creative.id || "")}`);
   }
 
+  const avatarSrc = creative.profile_photo_url || "/default-avatar.png";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
       <Card className="w-full max-w-md p-5">
@@ -34,8 +36,12 @@ export default function CreativeProfileModal({ open, creative, onClose, onInvite
 
         <div className="mt-4 flex items-center gap-3">
           <img
-            src={creative.photo || creative.profile_image || `https://i.pravatar.cc/200?u=${encodeURIComponent(creative.full_name || "creative")}`}
+            src={avatarSrc}
             alt={creative.full_name || "Creative"}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/default-avatar.png";
+            }}
             className="h-12 w-12 rounded-full object-cover"
           />
           <div>

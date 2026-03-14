@@ -17,6 +17,24 @@ function read_filter($key, $jsonInput) {
   return "";
 }
 
+function build_profile_photo_url($photoPath) {
+  $photoPath = trim((string) $photoPath);
+  if ($photoPath === "") {
+    return null;
+  }
+
+  if (preg_match("/^https?:\/\//i", $photoPath)) {
+    return $photoPath;
+  }
+
+  $normalizedPath = ltrim($photoPath, "/");
+  if (strpos($normalizedPath, "uploads/") === 0) {
+    return "http://localhost/meet-my-crew/backend/public/" . $normalizedPath;
+  }
+
+  return "http://localhost/meet-my-crew/backend/public/uploads/" . basename($normalizedPath);
+}
+
 $role = read_filter("role", $jsonInput);
 $region = read_filter("region", $jsonInput);
 $city = read_filter("city", $jsonInput);
@@ -31,6 +49,7 @@ $sql = "
     u.role,
     u.region,
     u.city,
+    u.profile_photo,
     p.bio,
     p.skills,
     p.availability,
@@ -91,6 +110,8 @@ $result = $stmt->get_result();
 
 $users = [];
 while ($row = $result->fetch_assoc()) {
+  $storedProfilePhoto = $row["profile_photo"] ?? $row["photo"] ?? "";
+  $row["profile_photo_url"] = build_profile_photo_url($storedProfilePhoto);
   $users[] = $row;
 }
 $stmt->close();
