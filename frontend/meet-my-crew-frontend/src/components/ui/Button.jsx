@@ -9,18 +9,19 @@ export default function Button({
   variant = "primary",
   className = "",
   type = "button",
+  as: Tag = "button",
   children,
   ...props
 }) {
   const variantClass = VARIANT_STYLES[variant] || VARIANT_STYLES.primary;
 
   return (
-    <button
-      type={type}
+    <Tag
+      type={Tag === "button" ? type : undefined}
       className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${variantClass} ${className}`.trim()}
       {...props}
     >
       {children}
-    </button>
+    </Tag>
   );
 }
