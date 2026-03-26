@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   User,
   Mail,
@@ -13,6 +13,38 @@ import {
 } from "lucide-react";
 import AuthShell from "../components/AuthShell";
 import { registerUser } from "../services/api";
+
+const ROLE_OPTIONS = [
+  "Actor",
+  "Editor",
+  "Producer",
+  "Director",
+  "Cinematographer",
+  "Screenwriter",
+  "Executive Producer",
+  "Drone Operator",
+  "Lighting Technician",
+  "Sound Designer",
+  "Audio Engineer",
+  "Production Designer",
+  "Video Editor",
+  "Content Creator",
+  "Marketing Manager",
+  "Social Media Manager",
+];
+
+const REGION_CITY_MAP = {
+  Adamawa: ["Ngaoundere", "Tibati"],
+  Centre: ["Yaounde", "Mbalmayo"],
+  East: ["Bertoua", "Batouri"],
+  "Far North": ["Maroua", "Kousseri"],
+  Littoral: ["Douala", "Nkongsamba"],
+  North: ["Garoua", "Guider"],
+  "North West": ["Bamenda", "Kumbo"],
+  South: ["Ebolowa", "Kribi"],
+  "South West": ["Buea", "Limbe"],
+  West: ["Bafoussam", "Dschang"],
+};
 
 export default function Register() {
   const navigate = useNavigate();
@@ -38,6 +70,14 @@ export default function Register() {
     "bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100";
   const selectPlaceholderOptionClassName =
     "bg-white text-slate-500 dark:bg-slate-900 dark:text-slate-400";
+  const regionOptions = Object.keys(REGION_CITY_MAP);
+  const cityOptions = useMemo(() => REGION_CITY_MAP[region] || [], [region]);
+
+  function handleRegionChange(event) {
+    const nextRegion = event.target.value;
+    setRegion(nextRegion);
+    setCity("");
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -46,7 +86,8 @@ export default function Register() {
     if (!agree) return setErr("You must agree to the Terms.");
 
     setLoading(true);
-    try {      await registerUser({
+    try {
+      await registerUser({
         full_name: fullName,
         email,
         password,
@@ -160,21 +201,11 @@ export default function Register() {
               <option value="" className={selectPlaceholderOptionClassName}>
                 -- Select Role --
               </option>
-              <option value="Actor" className={selectOptionClassName}>
-                Actor
-              </option>
-              <option value="Editor" className={selectOptionClassName}>
-                Editor
-              </option>
-              <option value="Producer" className={selectOptionClassName}>
-                Producer
-              </option>
-              <option value="Director" className={selectOptionClassName}>
-                Director
-              </option>
-              <option value="Cinematographer" className={selectOptionClassName}>
-                Cinematographer
-              </option>
+              {ROLE_OPTIONS.map((roleOption) => (
+                <option key={roleOption} value={roleOption} className={selectOptionClassName}>
+                  {roleOption}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -190,7 +221,7 @@ export default function Register() {
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-white/50 pointer-events-none" />
               <select
                 value={region}
-                onChange={(e) => setRegion(e.target.value)}
+                onChange={handleRegionChange}
                 className={`${selectBaseClassName} ${
                   region
                     ? "text-slate-900 dark:text-slate-100"
@@ -201,21 +232,11 @@ export default function Register() {
                 <option value="" className={selectPlaceholderOptionClassName}>
                   -- Select Region --
                 </option>
-                <option value="Centre" className={selectOptionClassName}>
-                  Centre
-                </option>
-                <option value="Littoral" className={selectOptionClassName}>
-                  Littoral
-                </option>
-                <option value="West" className={selectOptionClassName}>
-                  West
-                </option>
-                <option value="North West" className={selectOptionClassName}>
-                  North West
-                </option>
-                <option value="South West" className={selectOptionClassName}>
-                  South West
-                </option>
+                {regionOptions.map((regionOption) => (
+                  <option key={regionOption} value={regionOption} className={selectOptionClassName}>
+                    {regionOption}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -235,26 +256,17 @@ export default function Register() {
                     ? "text-slate-900 dark:text-slate-100"
                     : "text-slate-500 dark:text-slate-400"
                 }`}
+                disabled={!region}
                 required
               >
                 <option value="" className={selectPlaceholderOptionClassName}>
                   -- Select City --
                 </option>
-                <option value="Yaounde" className={selectOptionClassName}>
-                  Yaounde
-                </option>
-                <option value="Douala" className={selectOptionClassName}>
-                  Douala
-                </option>
-                <option value="Buea" className={selectOptionClassName}>
-                  Buea
-                </option>
-                <option value="Bamenda" className={selectOptionClassName}>
-                  Bamenda
-                </option>
-                <option value="Bafoussam" className={selectOptionClassName}>
-                  Bafoussam
-                </option>
+                {cityOptions.map((cityOption) => (
+                  <option key={cityOption} value={cityOption} className={selectOptionClassName}>
+                    {cityOption}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
