@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { apiRequest } from "../services/api";
-
-function isAdminUser(payload) {
-  const accountType = String(payload?.user?.account_type || "").toLowerCase();
-  const role = String(payload?.user?.role || "").toLowerCase();
-  return accountType === "admin" || role === "admin";
-}
+import { apiRequest, isAdminUser } from "../services/api";
 
 export default function AdminRoute({ children }) {
   const location = useLocation();

@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, CheckCircle2, Loader2 } from "lucide-react";
 import AuthShell from "../components/AuthShell";
-import { loginUser } from "../services/api";
+import { getProfile, isAdminUser, loginUser } from "../services/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,8 +20,9 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await loginUser({ email, password });
-      navigate("/dashboard");
+      const loginResponse = await loginUser({ email, password });
+      const profile = loginResponse?.user ? loginResponse : await getProfile();
+      navigate(isAdminUser(profile) ? "/admin" : "/dashboard", { replace: true });
     } catch (error) {
       setErr(error.message || "Invalid email or password.");
     } finally {

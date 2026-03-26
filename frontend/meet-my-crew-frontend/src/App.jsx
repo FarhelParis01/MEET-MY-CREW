@@ -1,9 +1,9 @@
 import { Routes, Route } from "react-router-dom";
-import Layout from "./components/layout/Layout";
+import UserLayout from "./components/layout/UserLayout";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminRoute from "./components/AdminRoute";
 
-import Dashboard from "./pages/Dashboard";
+import UserDashboard from "./pages/UserDashboard";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import Discover from "./pages/Discover";
@@ -31,8 +31,8 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      <Route element={<Layout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
+      <Route element={<UserLayout />}>
+        <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/discover" element={<Discover />} />

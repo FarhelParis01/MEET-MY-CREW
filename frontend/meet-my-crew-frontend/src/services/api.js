@@ -38,6 +38,12 @@ export async function apiRequest(path, options = {}) {
   return data;
 }
 
+export function isAdminUser(payload) {
+  const accountType = String(payload?.user?.account_type || "").toLowerCase();
+  const role = String(payload?.user?.role || "").toLowerCase();
+  return accountType === "admin" || role === "admin";
+}
+
 export async function loginUser({ email, password }) {
   return apiRequest("/login.php", {
     method: "POST",
